@@ -59,6 +59,9 @@ jobs:
       with:
         name: app-release.apk
         path: build/app/outputs/flutter-apk/app-release.apk
+    - name: Extract version from branch name
+      id: extract_version
+      run: echo "RELEASE_VERSION=$(echo ${{ github.head_ref }} | sed 's/.*\\///')" >> $GITHUB_ENV
 
     - name: Create Release
       id: create_release
@@ -66,8 +69,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ env.RELEASE_VERSION }}
+        release_name: Release ${{ env.RELEASE_VERSION }}
         draft: false
         prerelease: false
 
@@ -80,3 +83,15 @@ jobs:
         asset_path: build/app/outputs/flutter-apk/app-release.apk
         asset_name: app-release.apk
         asset_content_type: application/vnd.android.package-archive
+    
+    - name: Tag the source branch
+      if: github.event.pull_request.merged == true
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git fetch origin +refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
+        git checkout ${{ github.head_ref }}
+        git tag ${{ env.RELEASE_VERSION }}
+        git push origin ${{ env.RELEASE_VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
