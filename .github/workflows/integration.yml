@@ -1,0 +1,40 @@
+name: Flutter Integration Test
+
+on:
+  pull_request:
+    branches:
+      - release/**
+    paths:
+      - 'develop'
+
+env:
+  FLUTTER_VERSION: '3.22.1'
+  CACHE_KEY_PREFIX: 'pub-cache'
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+
+    - name: Cache Flutter packages
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.pub-cache
+        key: ${{ runner.os }}-${{ env.CACHE_KEY_PREFIX }}-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.CACHE_KEY_PREFIX }}-
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Run integration tests
+      run: flutter test test/integration/
