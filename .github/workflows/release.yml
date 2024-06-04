@@ -63,7 +63,7 @@ jobs:
     - name: Extract version from branch name
       id: extract_version
       run: |
-          RELEASE_VERSION=$(echo "${{ github.ref }}" | sed -e 's/^refs\/heads\/release\///')
+          RELEASE_VERSION=$(echo "${{ github.head_ref }}" | sed -e 's/^refs\/heads\/release\///')
           echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
 
     - name: Create Release
