@@ -4,8 +4,9 @@ on:
   pull_request:
     branches:
       - develop
-    paths:
-      - 'feature/**'
+    types:
+        - opened
+        - synchronize
 
 env:
   FLUTTER_VERSION: '3.22.1'
