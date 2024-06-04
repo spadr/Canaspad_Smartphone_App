@@ -4,9 +4,9 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - 'release/**'
-
+    types:
+        - opened
+        - synchronize
 env:
   FLUTTER_VERSION: '3.22.1'
   CACHE_KEY_PREFIX: 'pub-cache'
