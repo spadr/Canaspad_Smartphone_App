@@ -1,92 +1,71 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 
-import '../services/secure_storage_service.dart';
+import '../viewmodels/environment_viewmodel.dart';
 import 'environment_detail_view.dart';
 
-final secureStorageProvider = Provider<SecureStorageService>((ref) {
-  return SecureStorageService();
-});
-
-class EnvironmentView extends ConsumerWidget {
+/// A view that displays a list of environments and allows adding, editing, and deleting environments.
+class EnvironmentView extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final storageService = ref.watch(secureStorageProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Environment'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EnvironmentDetailView(
-                    environmentData: {
-                      'anon_key': null,
-                      'supabase_url': null,
-                      'env_name': null,
-                      'password': null,
-                      'email_address': null,
-                      'front_end_url': null,
-                      'selected': null,
-                      'session': null,
-                    },
-                    index: -1,
-                    onSave: (newData) async {
-                      final existingData = await storageService.getEnvironmentSettings('envSettings');
-                      List<dynamic> settingsList = existingData != null ? jsonDecode(existingData) : [];
-                      settingsList.add(newData);
-                      await storageService.saveEnvironmentSettings('envSettings', jsonEncode(settingsList));
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: FutureBuilder<String?>(
-        future: storageService.getEnvironmentSettings('envSettings'),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Center(child: Text('Error loading settings'));
-          }
-          List<dynamic> settingsList = jsonDecode(snapshot.data!);
-          return ListView.builder(
-            itemCount: settingsList.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(settingsList[index]['env_name'] ?? 'Environment ${index + 1}'),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => EnvironmentDetailView(
-                        environmentData: settingsList[index],
-                        index: index,
-                        onSave: (updatedData) async {
-                          settingsList[index] = updatedData;
-                          await storageService.saveEnvironmentSettings('envSettings', jsonEncode(settingsList));
-                        },
-                        onDelete: () async {
-                          settingsList.removeAt(index);
-                          await storageService.saveEnvironmentSettings('envSettings', jsonEncode(settingsList));
-                          Navigator.of(context).pop();
-                        },
-                      ),
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      // Provides the EnvironmentViewModel to the widget tree.
+      create: (context) => EnvironmentViewModel(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Environments'),
+        ),
+        body: Consumer<EnvironmentViewModel>(
+          // Consumes the EnvironmentViewModel to rebuild the UI when the model changes.
+          builder: (context, viewModel, child) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                itemCount: viewModel.environments.length,
+                itemBuilder: (context, index) {
+                  final env = viewModel.environments[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    elevation: 4.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: ListTile(
+                      title: Text(env.envName ?? 'No Name'),
+                      subtitle: Text('Supabase URL: ${env.supabaseUrl ?? "N/A"}'),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () async {
+                        // Navigates to the EnvironmentDetailView when an environment is tapped.
+                        final result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => EnvironmentDetailView(
+                              environment: env,
+                              environments: viewModel.environments,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          // Reloads the environments if the detail view indicates changes.
+                          viewModel.loadEnvironments();
+                        }
+                      },
                     ),
                   );
                 },
-              );
-            },
-          );
-        },
+              ),
+            );
+          },
+        ),
+        floatingActionButton: Consumer<EnvironmentViewModel>(
+          // Consumes the EnvironmentViewModel to handle adding a new environment.
+          builder: (context, viewModel, child) {
+            return FloatingActionButton(
+              onPressed: viewModel.addEnvironment,
+              tooltip: 'Add Environment',
+              child: Icon(Icons.add),
+            );
+          },
+        ),
       ),
     );
   }

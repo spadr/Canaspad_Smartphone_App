@@ -24,5 +24,10 @@ void main() {
       final calculator = Calculator();
       expect(calculator.subtract(5, 2), 3);
     });
+
+    test('subtracts two numbers', () {
+      final calculator = Calculator();
+      expect(calculator.subtract(5, 2), 3);
+    });
   });
 }
