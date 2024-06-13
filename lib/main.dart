@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
-import 'views/splash_view.dart';
+import 'views/initialization_view.dart';
 
 void main(List<String> args) {
   // 引数を解析してモードとフレーバーを設定
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: _getAppTitle(),
       theme: _getAppTheme(),
-      home: SplashView(flavor: flavor),
+      home: InitializationView(flavor: flavor),
     );
   }
 

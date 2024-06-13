@@ -39,3 +39,6 @@ jobs:
 
     - name: Run unit tests
       run: flutter test test/unit/
+
+    - name: Run widget tests
+      run: flutter test test/widget/
