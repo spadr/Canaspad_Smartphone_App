@@ -1,52 +1,36 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/environment_model.dart';
+import '../providers.dart';
 import '../services/secure_storage_service.dart';
 
-/// ViewModel that manages the state of environments and handles interactions with secure storage.
 class EnvironmentViewModel extends ChangeNotifier {
-  /// Instance of the SecureStorageService to handle secure data storage.
-  SecureStorageService _secureStorageService = SecureStorageService();
-
-  /// List of environments managed by this ViewModel.
+  final SecureStorageService _secureStorageService;
   List<EnvironmentModel> environments = [];
 
-  /// Constructor that initializes the ViewModel and loads environments from storage.
-  EnvironmentViewModel() {
+  EnvironmentViewModel(this._secureStorageService) {
     loadEnvironments();
   }
 
-  /// Sets the storage service to a new instance. Useful for testing with mock services.
-  void setStorageService(SecureStorageService storageService) {
-    _secureStorageService = storageService;
-  }
-
-  /// Loads environments from secure storage and notifies listeners.
   Future<void> loadEnvironments() async {
-    final data = await _secureStorageService.readSecureData('envSettings');
-    if (data != null) {
-      environments = (jsonDecode(data) as List).map((e) => EnvironmentModel.fromJson(e)).toList();
-      notifyListeners();
-    }
+    environments = await _secureStorageService.readAllEnvironments();
+    _ensureOneSelectedEnvironment();
+    notifyListeners();
   }
 
-  /// Adds a new environment with a unique name and saves the updated list to storage.
   void addEnvironment() {
     final newEnvironment = EnvironmentModel(
       envName: _generateEnvironmentName(),
-      anonKey: null,
-      supabaseUrl: null,
-      password: null,
-      emailAddress: null,
       selected: false,
     );
     environments.add(newEnvironment);
+    _ensureOneSelectedEnvironment();
     _saveEnvironments();
   }
 
-  /// Saves the given environment to the list, updating if it already exists, and then saves the list to storage.
   void saveEnvironment(EnvironmentModel environment) {
     final index = environments.indexWhere((e) => e.envName == environment.envName);
     if (index != -1) {
@@ -54,24 +38,54 @@ class EnvironmentViewModel extends ChangeNotifier {
     } else {
       environments.add(environment);
     }
+    _ensureOneSelectedEnvironment();
     _saveEnvironments();
   }
 
-  /// Deletes the given environment from the list and saves the updated list to storage.
-  void deleteEnvironment(EnvironmentModel environment) {
+  Future<bool> deleteEnvironment(EnvironmentModel environment) async {
+    if (environments.length <= 1) {
+      return false; // 最後の環境設定は削除できない
+    }
+
+    if (environment.selected == true) {
+      // 選択されている環境を削除する場合、別の環境を選択する
+      final otherEnvironment = environments.firstWhere((e) => e != environment);
+      otherEnvironment.selected = true;
+    }
+
     environments.remove(environment);
     _saveEnvironments();
+    return true;
   }
 
-  /// Selects the given environment as the primary environment, deselecting all others.
-  void selectEnvironment(EnvironmentModel selectedEnvironment, bool selected) {
+  void selectEnvironment(EnvironmentModel selectedEnvironment) {
+    if (selectedEnvironment.selected == true) {
+      return; // 既に選択されている環境の選択を解除することはできない
+    }
+
     for (var env in environments) {
-      env.selected = env == selectedEnvironment ? selected : false;
+      env.selected = (env == selectedEnvironment);
     }
     _saveEnvironments();
   }
 
-  /// Saves the current list of environments to secure storage and notifies listeners of changes.
+  void _ensureOneSelectedEnvironment() {
+    if (environments.isEmpty) {
+      return;
+    }
+
+    final selectedEnvironments = environments.where((e) => e.selected == true).toList();
+    if (selectedEnvironments.isEmpty) {
+      // 選択されている環境がない場合、最初の環境を選択する
+      environments.first.selected = true;
+    } else if (selectedEnvironments.length > 1) {
+      // 複数の環境が選択されている場合、最初の選択環境以外の選択を解除する
+      for (var i = 1; i < selectedEnvironments.length; i++) {
+        selectedEnvironments[i].selected = false;
+      }
+    }
+  }
+
   Future<void> _saveEnvironments() async {
     await _secureStorageService.writeSecureData(
       'envSettings',
@@ -80,7 +94,6 @@ class EnvironmentViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Generates a unique name for a new environment by incrementing an index.
   String _generateEnvironmentName() {
     int index = 1;
     while (environments.any((env) => env.envName == 'Environment $index')) {
@@ -89,3 +102,8 @@ class EnvironmentViewModel extends ChangeNotifier {
     return 'Environment $index';
   }
 }
+
+final environmentViewModelProvider = ChangeNotifierProvider((ref) {
+  final secureStorageService = ref.watch(secureStorageServiceProvider);
+  return EnvironmentViewModel(secureStorageService);
+});

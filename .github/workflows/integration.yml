@@ -9,7 +9,7 @@ on:
         - synchronize
 
 env:
-  FLUTTER_VERSION: '3.22.1'
+  FLUTTER_VERSION: '3.22.2'
   CACHE_KEY_PREFIX: 'pub-cache'
 
 jobs:
@@ -42,3 +42,4 @@ jobs:
     
     - name: Run widget tests
       run: flutter test test/widget/
+
