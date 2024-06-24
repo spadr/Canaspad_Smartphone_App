@@ -3,12 +3,16 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/environment_model.dart';
+import '../providers.dart';
+import '../services/secure_storage_service.dart';
 
 class InitializationViewModel extends ChangeNotifier {
-  final _storage = FlutterSecureStorage();
+  final SecureStorageService _secureStorageService;
+
+  InitializationViewModel(this._secureStorageService);
 
   /// Initializes the app by saving sample data if no environment data exists.
   Future<void> initializeApp() async {
@@ -17,8 +21,8 @@ class InitializationViewModel extends ChangeNotifier {
 
   /// Saves sample environment data if no data exists in secure storage.
   Future<void> _loadOrSaveSampleData() async {
-    final storedData = await _storage.read(key: 'envSettings');
-    if (storedData == null) {
+    final environments = await _secureStorageService.readAllEnvironments();
+    if (environments.isEmpty) {
       final sampleData = [
         EnvironmentModel(
           anonKey: null,
@@ -37,7 +41,10 @@ class InitializationViewModel extends ChangeNotifier {
           selected: false,
         ),
       ];
-      await _storage.write(key: 'envSettings', value: jsonEncode(sampleData.map((e) => e.toJson()).toList()));
+      await _secureStorageService.writeSecureData(
+        'envSettings',
+        jsonEncode(sampleData.map((e) => e.toJson()).toList()),
+      );
     }
   }
 
@@ -51,3 +58,8 @@ class InitializationViewModel extends ChangeNotifier {
     }
   }
 }
+
+final initializationViewModelProvider = ChangeNotifierProvider((ref) {
+  final secureStorageService = ref.watch(secureStorageServiceProvider);
+  return InitializationViewModel(secureStorageService);
+});

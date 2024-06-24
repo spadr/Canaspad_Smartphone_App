@@ -8,7 +8,7 @@ class SettingView extends StatelessWidget {
         title: Text('Setting'),
       ),
       body: Center(
-        child: Text('Setting Page Content'),
+        child: Text('Setting View Content'),
       ),
     );
   }

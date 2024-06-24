@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class FilmView extends StatelessWidget {
+class ImageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Film'),
+        title: Text('Image'),
       ),
       body: Center(
-        child: Text('Film Page Content'),
+        child: Text('Image View Content'),
       ),
     );
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../mini_game/game_main.dart';
 import '../viewmodels/initialization_viewmodel.dart';
-import 'home_page.dart';
+import 'home_view.dart';
 
-class InitializationView extends StatefulWidget {
+class InitializationView extends ConsumerStatefulWidget {
   final String flavor;
 
   InitializationView({required this.flavor});
@@ -14,13 +14,13 @@ class InitializationView extends StatefulWidget {
   _InitializationViewState createState() => _InitializationViewState();
 }
 
-class _InitializationViewState extends State<InitializationView> {
+class _InitializationViewState extends ConsumerState<InitializationView> {
   late InitializationViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = InitializationViewModel();
+    _viewModel = ref.read(initializationViewModelProvider);
     _initializeApp();
   }
 
@@ -33,7 +33,7 @@ class _InitializationViewState extends State<InitializationView> {
     final isConnected = await _viewModel.checkNetworkConnectivity();
     if (isConnected) {
       await Future.delayed(Duration(seconds: 3)); // Simulate a delay
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomeView()));
     } else {
       _showNetworkError();
     }
@@ -66,12 +66,9 @@ class _InitializationViewState extends State<InitializationView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => _viewModel,
-      child: Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }

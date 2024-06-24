@@ -1,17 +1,28 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 abstract class AuthService {
   Future<void> signIn(String email, String password);
   Future<void> signOut();
 }
 
 class SupabaseAuthService implements AuthService {
-  @override
+  final SupabaseClient _client;
+
+  SupabaseAuthService({SupabaseClient? client}) : _client = client ?? Supabase.instance.client;
+
   Future<void> signIn(String email, String password) async {
-    // Supabaseのサインイン処理
+    try {
+      await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      throw Exception('Failed to sign in: $e');
+    }
   }
 
-  @override
   Future<void> signOut() async {
-    // Supabaseのサインアウト処理
+    await _client.auth.signOut();
   }
 }
 

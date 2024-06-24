@@ -8,7 +8,7 @@ class NotificationView extends StatelessWidget {
         title: Text('Notification'),
       ),
       body: Center(
-        child: Text('Notification Page Content'),
+        child: Text('Notification View Content'),
       ),
     );
   }

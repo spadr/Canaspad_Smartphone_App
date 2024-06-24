@@ -1,94 +1,76 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/environment_model.dart';
-import '../services/secure_storage_service.dart';
+import '../viewmodels/environment_viewmodel.dart';
+import '../widgets/environment_text_field.dart';
 
-/// A view to edit the details of an environment.
-class EnvironmentDetailView extends StatefulWidget {
-  /// The environment to be edited.
+class EnvironmentDetailView extends ConsumerStatefulWidget {
   final EnvironmentModel environment;
 
-  /// The list of all environments.
-  final List<EnvironmentModel> environments;
-
-  /// Creates a new [EnvironmentDetailView].
-  EnvironmentDetailView({required this.environment, required this.environments});
+  EnvironmentDetailView({Key? key, required this.environment}) : super(key: key);
 
   @override
   _EnvironmentDetailViewState createState() => _EnvironmentDetailViewState();
 }
 
-class _EnvironmentDetailViewState extends State<EnvironmentDetailView> {
-  final SecureStorageService _secureStorageService = SecureStorageService();
+class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
   final _formKey = GlobalKey<FormState>();
   late EnvironmentModel environment;
-  late List<EnvironmentModel> environments;
 
   @override
   void initState() {
     super.initState();
     environment = widget.environment;
-    environments = widget.environments;
   }
 
-  /// Saves the list of environments to secure storage.
-  Future<void> _saveEnvironments() async {
-    await _secureStorageService.writeSecureData(
-      'envSettings',
-      jsonEncode(environments.map((e) => e.toJson()).toList()),
-    );
-  }
-
-  /// Saves the current environment details.
   Future<void> _saveEnvironment() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      await _saveEnvironments();
+      ref.read(environmentViewModelProvider.notifier).saveEnvironment(environment);
       Navigator.pop(context, true);
     }
   }
 
-  /// Deletes the current environment.
   Future<void> _deleteEnvironment() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete this environment?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this environment?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
     );
-    if (confirmed == true) {
-      environments.remove(environment);
-      await _saveEnvironments();
-      Navigator.pop(context, true);
-    }
-  }
 
-  /// Selects the current environment.
-  void _selectEnvironment(bool selected) {
-    setState(() {
-      for (var env in environments) {
-        env.selected = env == environment ? selected : false;
+    if (confirmed == true) {
+      final result = await ref.read(environmentViewModelProvider.notifier).deleteEnvironment(environment);
+      if (result) {
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cannot delete the last environment')),
+        );
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isSingleEnvironment = environments.length == 1;
+    final viewModel = ref.watch(environmentViewModelProvider);
+
     return Scaffold(
+      key: Key('EnvironmentDetailView'),
       appBar: AppBar(title: Text('Edit Environment')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -96,35 +78,60 @@ class _EnvironmentDetailViewState extends State<EnvironmentDetailView> {
           key: _formKey,
           child: ListView(
             children: [
-              _buildTextFormField('Environment Name', environment.envName, (value) => environment.envName = value),
+              EnvironmentTextField(
+                key: Key('EnvironmentNameField'),
+                labelText: 'Environment Name',
+                initialValue: environment.envName,
+                onSaved: (value) => environment.envName = value,
+              ),
               SizedBox(height: 16.0),
-              _buildTextFormField('Anon Key', environment.anonKey, (value) => environment.anonKey = value),
+              EnvironmentTextField(
+                key: Key('AnonKeyField'),
+                labelText: 'Anon Key',
+                initialValue: environment.anonKey,
+                onSaved: (value) => environment.anonKey = value,
+              ),
               SizedBox(height: 16.0),
-              _buildTextFormField('Supabase URL', environment.supabaseUrl, (value) => environment.supabaseUrl = value),
+              EnvironmentTextField(
+                key: Key('SupabaseUrlField'),
+                labelText: 'Supabase URL',
+                initialValue: environment.supabaseUrl,
+                onSaved: (value) => environment.supabaseUrl = value,
+              ),
               SizedBox(height: 16.0),
-              _buildTextFormField('Password', environment.password, (value) => environment.password = value),
+              EnvironmentTextField(
+                key: Key('PasswordField'),
+                labelText: 'Password',
+                initialValue: environment.password,
+                onSaved: (value) => environment.password = value,
+                obscureText: true,
+              ),
               SizedBox(height: 16.0),
-              _buildTextFormField('Email Address', environment.emailAddress, (value) => environment.emailAddress = value),
+              EnvironmentTextField(
+                key: Key('EmailAddressField'),
+                labelText: 'Email Address',
+                initialValue: environment.emailAddress,
+                onSaved: (value) => environment.emailAddress = value,
+              ),
               SizedBox(height: 16.0),
               SwitchListTile(
+                key: Key('SelectEnvironmentSwitch'),
                 title: Text('Select this environment'),
-                subtitle: environment.selected == true
-                    ? Text(
-                        'Primary Environment',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
                 value: environment.selected ?? false,
-                onChanged: environment.selected == true ? null : _selectEnvironment,
+                onChanged: environment.selected == true
+                    ? null
+                    : (value) {
+                        if (value) {
+                          ref.read(environmentViewModelProvider.notifier).selectEnvironment(environment);
+                        }
+                      },
               ),
               SizedBox(height: 16.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton.icon(
+                    key: Key('SaveEnvironmentButton'),
                     onPressed: _saveEnvironment,
                     icon: Icon(Icons.save),
                     label: Text('Save'),
@@ -134,7 +141,8 @@ class _EnvironmentDetailViewState extends State<EnvironmentDetailView> {
                     ),
                   ),
                   ElevatedButton.icon(
-                    onPressed: isSingleEnvironment ? null : _deleteEnvironment,
+                    key: Key('DeleteEnvironmentButton'),
+                    onPressed: _deleteEnvironment,
                     icon: Icon(Icons.delete),
                     label: Text('Delete'),
                     style: ElevatedButton.styleFrom(
@@ -148,18 +156,6 @@ class _EnvironmentDetailViewState extends State<EnvironmentDetailView> {
           ),
         ),
       ),
-    );
-  }
-
-  /// Builds a text form field with the given label and initial value.
-  TextFormField _buildTextFormField(String labelText, String? initialValue, FormFieldSetter<String?> onSaved) {
-    return TextFormField(
-      initialValue: initialValue,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(),
-      ),
-      onSaved: onSaved,
     );
   }
 }

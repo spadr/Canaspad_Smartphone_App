@@ -29,6 +29,7 @@ void main(List<String> arguments) {
     if (depth > maxDepth) return;
 
     final indent = prefix.isEmpty ? '' : '$prefix|-- ';
+
     treeStructure.add('$indent${dir.path}');
 
     final List<FileSystemEntity> entities = dir.listSync();
@@ -87,4 +88,4 @@ void main(List<String> arguments) {
 }
 
 
-// dart show_files.dart "C:\github\canaspad_smartphone_app\lib\mini_game"
+// dart show_files.dart "C:\github\canaspad_smartphone_app\lib"

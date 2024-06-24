@@ -4,7 +4,7 @@ import '../game_title_screen.dart';
 import '../services/game_service.dart';
 
 void navigateTo(BuildContext context, Widget target) {
-  Navigator.pushReplacement(
+  Navigator.push(
     context,
     MaterialPageRoute(builder: (context) => target),
   );
