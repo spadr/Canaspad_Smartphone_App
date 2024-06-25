@@ -1,10 +1,10 @@
 // lib/providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/services/auth_service.dart';
-import 'core/services/secure_storage_service.dart';
-import 'core/services/supabase_service.dart';
-import 'features/environment/models/environment_model.dart';
+import 'models/environment_model.dart';
+import 'services/auth_service.dart';
+import 'services/secure_storage_service.dart';
+import 'services/supabase_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   final flavor = ref.watch(flavorProvider);

@@ -31,12 +31,12 @@ class SensingDataState {
 class SensingDataViewModel extends StateNotifier<SensingDataState> {
   final SupabaseService _supabaseService;
 
-  SensingDataViewModel(this._supabaseService) : super(SensingDataState(data: []));
+  SensingDataViewModel(this._supabaseService) : super(SensingDataState(data: [])) {}
 
   Future<void> loadSensingData() async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      final sensingData = await _supabaseService.fetchSensingData();
+      final sensingData = await _supabaseService.fetchNumberData();
       state = state.copyWith(data: sensingData, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);

@@ -1,5 +1,5 @@
-import 'package:canaspad/mini_game/services/game_service.dart';
-import 'package:canaspad/mini_game/utils/navigation_utils.dart';
+import 'package:canaspad/features/mini_game/services/game_service.dart';
+import 'package:canaspad/features/mini_game/utils/navigation_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'core/services/secure_storage_service.dart';
-import 'features/environment/models/environment_model.dart';
-import 'features/initialization/views/initialization_view.dart';
+import 'models/environment_model.dart';
 import 'providers.dart';
+import 'services/secure_storage_service.dart';
+import 'views/initialization_view.dart';
 
 void main() async {
   await initializeApp();

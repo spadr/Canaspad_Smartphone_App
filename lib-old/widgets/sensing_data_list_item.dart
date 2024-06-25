@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../models/sensing_data_model.dart';
 
-class SensingDataListItem extends StatelessWidget {
+class NumberDataListItem extends StatelessWidget {
   final SensingData sensingData;
   final VoidCallback onTap;
 
-  const SensingDataListItem({
+  const NumberDataListItem({
     Key? key,
     required this.sensingData,
     required this.onTap,

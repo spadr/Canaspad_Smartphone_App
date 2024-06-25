@@ -6,18 +6,18 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:canaspad/core/services/auth_service.dart';
+import 'package:canaspad/core/services/secure_storage_service.dart';
+import 'package:canaspad/core/services/supabase_service.dart';
+import 'package:canaspad/features/environment/models/environment_model.dart';
+import 'package:canaspad/features/environment/views/environment_view.dart';
+import 'package:canaspad/features/image/image_view.dart';
+import 'package:canaspad/features/notification/notification_view.dart';
+import 'package:canaspad/features/number/views/number_detail_view.dart';
+import 'package:canaspad/features/number/views/number_view.dart';
+import 'package:canaspad/features/setting/setting_view.dart';
 import 'package:canaspad/main.dart' as app;
-import 'package:canaspad/models/environment_model.dart';
 import 'package:canaspad/providers.dart';
-import 'package:canaspad/services/auth_service.dart';
-import 'package:canaspad/services/secure_storage_service.dart';
-import 'package:canaspad/services/supabase_service.dart';
-import 'package:canaspad/views/environment_view.dart';
-import 'package:canaspad/views/image_view.dart';
-import 'package:canaspad/views/notification_view.dart';
-import 'package:canaspad/views/number_detail_view.dart';
-import 'package:canaspad/views/number_view.dart';
-import 'package:canaspad/views/setting_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
