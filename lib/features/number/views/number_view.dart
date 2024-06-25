@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../viewmodels/sensing_data_viewmodel.dart';
-import '../widgets/sensing_data_list_item.dart';
+import '../../../core/widgets/number_data_list_item.dart';
+import '../viewmodels/number_data_state.dart';
 import 'number_detail_view.dart';
 
 class NumberView extends ConsumerStatefulWidget {
@@ -15,13 +15,13 @@ class _NumberViewState extends ConsumerState<NumberView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(sensingDataViewModelProvider.notifier).loadSensingData();
+      ref.read(numberDataViewModelProvider.notifier).loadNumberData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(sensingDataViewModelProvider);
+    final state = ref.watch(numberDataViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +31,7 @@ class _NumberViewState extends ConsumerState<NumberView> {
     );
   }
 
-  Widget _buildBody(BuildContext context, SensingDataState state) {
+  Widget _buildBody(BuildContext context, NumberDataState state) {
     if (state.isLoading) {
       return Center(child: CircularProgressIndicator());
     } else if (state.error != null) {
@@ -42,13 +42,13 @@ class _NumberViewState extends ConsumerState<NumberView> {
       return ListView.builder(
         itemCount: state.data.length,
         itemBuilder: (context, index) {
-          final sensingData = state.data[index];
-          return SensingDataListItem(
-            sensingData: sensingData,
+          final numberData = state.data[index];
+          return NumberDataListItem(
+            numberData: numberData,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NumberDetailView(sensingData: sensingData),
+                builder: (context) => NumberDetailView(numberData: numberData),
               ),
             ),
           );

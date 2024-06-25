@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../models/environment_model.dart';
+import '../../features/environment/models/environment_model.dart';
 
 abstract class SecureStorageService {
   Future<void> writeSecureData(String key, String value);

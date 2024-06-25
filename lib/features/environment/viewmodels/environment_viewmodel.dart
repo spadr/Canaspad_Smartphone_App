@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/secure_storage_service.dart';
+import '../../../providers.dart';
 import '../models/environment_model.dart';
-import '../providers.dart';
-import '../services/secure_storage_service.dart';
 
 class EnvironmentViewModel extends ChangeNotifier {
   final SecureStorageService _secureStorageService;

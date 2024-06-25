@@ -1,6 +1,6 @@
 import 'data_model.dart';
 
-class SensingData {
+class NumberData {
   final String publicId;
   final String group;
   final String name;
@@ -9,7 +9,7 @@ class SensingData {
   final DateTime updatedAt;
   final List<Data> data;
 
-  SensingData({
+  NumberData({
     required this.publicId,
     required this.group,
     required this.name,
@@ -19,8 +19,8 @@ class SensingData {
     required this.data,
   });
 
-  factory SensingData.fromJson(Map<String, dynamic> json, List<Data> data) {
-    return SensingData(
+  factory NumberData.fromJson(Map<String, dynamic> json, List<Data> data) {
+    return NumberData(
       publicId: json['publicId'] ?? '',
       group: json['group'] ?? '',
       name: json['name'] ?? '',
@@ -33,6 +33,6 @@ class SensingData {
 
   @override
   String toString() {
-    return 'SensingData(publicId: $publicId, group: $group, name: $name, dataType: $dataType, createdAt: $createdAt, updatedAt: $updatedAt, data: $data)';
+    return 'NumberData(publicId: $publicId, group: $group, name: $name, dataType: $dataType, createdAt: $createdAt, updatedAt: $updatedAt, data: $data)';
   }
 }

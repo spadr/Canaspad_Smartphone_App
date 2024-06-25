@@ -1,4 +1,4 @@
-import '../models/environment_model.dart';
+import '../../features/environment/models/environment_model.dart';
 
 final sampleEnvironmentData = [
   EnvironmentModel(

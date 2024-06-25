@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/environment_text_field.dart';
 import '../models/environment_model.dart';
 import '../viewmodels/environment_viewmodel.dart';
-import '../widgets/environment_text_field.dart';
 
 class EnvironmentDetailView extends ConsumerStatefulWidget {
   final EnvironmentModel environment;
@@ -67,8 +67,6 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(environmentViewModelProvider);
-
     return Scaffold(
       key: Key('EnvironmentDetailView'),
       appBar: AppBar(title: Text('Edit Environment')),

@@ -5,9 +5,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/environment_model.dart';
-import '../providers.dart';
-import '../services/secure_storage_service.dart';
+import '../../../core/services/secure_storage_service.dart';
+import '../../../providers.dart';
+import '../../environment/models/environment_model.dart';
 
 class InitializationViewModel extends ChangeNotifier {
   final SecureStorageService _secureStorageService;

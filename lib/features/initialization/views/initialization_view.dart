@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../mini_game/game_main.dart';
+import '../../home/home_view.dart';
+import '../../mini_game/game_main.dart';
 import '../viewmodels/initialization_viewmodel.dart';
-import 'home_view.dart';
 
 class InitializationView extends ConsumerStatefulWidget {
   final String flavor;

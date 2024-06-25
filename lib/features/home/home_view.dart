@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'environment_view.dart';
-import 'image_view.dart';
-import 'notification_view.dart';
-import 'number_view.dart';
-import 'setting_view.dart';
+import '../environment/views/environment_view.dart';
+import '../image/image_view.dart';
+import '../notification/notification_view.dart';
+import '../number/views/number_view.dart';
+import '../setting/setting_view.dart';
 
 class HomeView extends StatefulWidget {
   @override
