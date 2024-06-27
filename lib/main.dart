@@ -31,7 +31,6 @@ Future<void> initializeApp() async {
         anonKey: selectedEnvironment.anonKey ?? 'YOUR_DEFAULT_SUPABASE_ANON_KEY',
       );
     } else {
-      print('No environment settings found. Using default values.');
       await Supabase.initialize(
         url: 'YOUR_DEFAULT_SUPABASE_URL',
         anonKey: 'YOUR_DEFAULT_SUPABASE_ANON_KEY',
@@ -42,7 +41,6 @@ Future<void> initializeApp() async {
     }
   } else {
     // 開発用の場合、モックのサービスを使用
-    print('Running in develop mode');
     overrides.add(supabaseServiceProvider.overrideWithProvider(mockSupabaseServiceProvider));
     overrides.add(secureStorageServiceProvider.overrideWithProvider(Provider((ref) => MockSecureStorageService())));
   }

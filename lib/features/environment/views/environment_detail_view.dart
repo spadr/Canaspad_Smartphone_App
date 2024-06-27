@@ -17,6 +17,7 @@ class EnvironmentDetailView extends ConsumerStatefulWidget {
 class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
   final _formKey = GlobalKey<FormState>();
   late EnvironmentModel environment;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -24,15 +25,32 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
     environment = widget.environment;
   }
 
+  @override
+  void dispose() {
+    // ここで必要なクリーンアップ処理を行う
+    super.dispose();
+  }
+
   Future<void> _saveEnvironment() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      ref.read(environmentViewModelProvider.notifier).saveEnvironment(environment);
-      Navigator.pop(context, true);
+      setState(() => _isLoading = true);
+      try {
+        await ref.read(environmentViewModelProvider.notifier).saveEnvironment(environment);
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
   Future<void> _deleteEnvironment() async {
+    if (!mounted) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -53,14 +71,23 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
       },
     );
 
-    if (confirmed == true) {
-      final result = await ref.read(environmentViewModelProvider.notifier).deleteEnvironment(environment);
-      if (result) {
-        Navigator.pop(context, true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cannot delete the last environment')),
-        );
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        final result = await ref.read(environmentViewModelProvider.notifier).deleteEnvironment(environment);
+        if (mounted) {
+          if (result) {
+            Navigator.pop(context, true);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Cannot delete the last environment')),
+            );
+          }
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
   }
@@ -70,90 +97,92 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
     return Scaffold(
       key: Key('EnvironmentDetailView'),
       appBar: AppBar(title: Text('Edit Environment')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              EnvironmentTextField(
-                key: Key('EnvironmentNameField'),
-                labelText: 'Environment Name',
-                initialValue: environment.envName,
-                onSaved: (value) => environment.envName = value,
-              ),
-              SizedBox(height: 16.0),
-              EnvironmentTextField(
-                key: Key('AnonKeyField'),
-                labelText: 'Anon Key',
-                initialValue: environment.anonKey,
-                onSaved: (value) => environment.anonKey = value,
-              ),
-              SizedBox(height: 16.0),
-              EnvironmentTextField(
-                key: Key('SupabaseUrlField'),
-                labelText: 'Supabase URL',
-                initialValue: environment.supabaseUrl,
-                onSaved: (value) => environment.supabaseUrl = value,
-              ),
-              SizedBox(height: 16.0),
-              EnvironmentTextField(
-                key: Key('PasswordField'),
-                labelText: 'Password',
-                initialValue: environment.password,
-                onSaved: (value) => environment.password = value,
-                obscureText: true,
-              ),
-              SizedBox(height: 16.0),
-              EnvironmentTextField(
-                key: Key('EmailAddressField'),
-                labelText: 'Email Address',
-                initialValue: environment.emailAddress,
-                onSaved: (value) => environment.emailAddress = value,
-              ),
-              SizedBox(height: 16.0),
-              SwitchListTile(
-                key: Key('SelectEnvironmentSwitch'),
-                title: Text('Select this environment'),
-                value: environment.selected ?? false,
-                onChanged: environment.selected == true
-                    ? null
-                    : (value) {
-                        if (value) {
-                          ref.read(environmentViewModelProvider.notifier).selectEnvironment(environment);
-                        }
-                      },
-              ),
-              SizedBox(height: 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    key: Key('SaveEnvironmentButton'),
-                    onPressed: _saveEnvironment,
-                    icon: Icon(Icons.save),
-                    label: Text('Save'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    EnvironmentTextField(
+                      key: Key('EnvironmentNameField'),
+                      labelText: 'Environment Name',
+                      initialValue: environment.envName,
+                      onSaved: (value) => environment.envName = value,
                     ),
-                  ),
-                  ElevatedButton.icon(
-                    key: Key('DeleteEnvironmentButton'),
-                    onPressed: _deleteEnvironment,
-                    icon: Icon(Icons.delete),
-                    label: Text('Delete'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+                    SizedBox(height: 16.0),
+                    EnvironmentTextField(
+                      key: Key('AnonKeyField'),
+                      labelText: 'Anon Key',
+                      initialValue: environment.anonKey,
+                      onSaved: (value) => environment.anonKey = value,
                     ),
-                  ),
-                ],
+                    SizedBox(height: 16.0),
+                    EnvironmentTextField(
+                      key: Key('SupabaseUrlField'),
+                      labelText: 'Supabase URL',
+                      initialValue: environment.supabaseUrl,
+                      onSaved: (value) => environment.supabaseUrl = value,
+                    ),
+                    SizedBox(height: 16.0),
+                    EnvironmentTextField(
+                      key: Key('PasswordField'),
+                      labelText: 'Password',
+                      initialValue: environment.password,
+                      onSaved: (value) => environment.password = value,
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 16.0),
+                    EnvironmentTextField(
+                      key: Key('EmailAddressField'),
+                      labelText: 'Email Address',
+                      initialValue: environment.emailAddress,
+                      onSaved: (value) => environment.emailAddress = value,
+                    ),
+                    SizedBox(height: 16.0),
+                    SwitchListTile(
+                      key: Key('SelectEnvironmentSwitch'),
+                      title: Text('Select this environment'),
+                      value: environment.selected ?? false,
+                      onChanged: environment.selected == true
+                          ? null
+                          : (value) {
+                              if (value) {
+                                ref.read(environmentViewModelProvider.notifier).selectEnvironment(environment);
+                              }
+                            },
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          key: Key('SaveEnvironmentButton'),
+                          onPressed: _saveEnvironment,
+                          icon: Icon(Icons.save),
+                          label: Text('Save'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          key: Key('DeleteEnvironmentButton'),
+                          onPressed: _deleteEnvironment,
+                          icon: Icon(Icons.delete),
+                          label: Text('Delete'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

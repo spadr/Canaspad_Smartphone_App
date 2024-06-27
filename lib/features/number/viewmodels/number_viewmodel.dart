@@ -1,26 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/supabase_service.dart';
-import '../../../data/models/number_data_model.dart';
+import '../../../data/models/numeric_data_model.dart';
 import '../../../providers.dart';
 
-class NumberDataState {
-  final List<NumberData> data;
+class NumericDataState {
+  final List<NumericData> data;
   final String? error;
   final bool isLoading;
 
-  NumberDataState({
+  NumericDataState({
     required this.data,
     this.error,
     this.isLoading = false,
   });
 
-  NumberDataState copyWith({
-    List<NumberData>? data,
+  NumericDataState copyWith({
+    List<NumericData>? data,
     String? error,
     bool? isLoading,
   }) {
-    return NumberDataState(
+    return NumericDataState(
       data: data ?? this.data,
       error: error,
       isLoading: isLoading ?? this.isLoading,
@@ -28,15 +28,15 @@ class NumberDataState {
   }
 }
 
-class NumberDataViewModel extends StateNotifier<NumberDataState> {
+class NumericDataViewModel extends StateNotifier<NumericDataState> {
   final SupabaseService _supabaseService;
 
-  NumberDataViewModel(this._supabaseService) : super(NumberDataState(data: []));
+  NumericDataViewModel(this._supabaseService) : super(NumericDataState(data: []));
 
-  Future<void> loadNumberData() async {
+  Future<void> loadNumericData() async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      final numberData = await _supabaseService.fetchNumberData();
+      final numberData = await _supabaseService.getNumericData();
       state = state.copyWith(data: numberData, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -44,7 +44,7 @@ class NumberDataViewModel extends StateNotifier<NumberDataState> {
   }
 }
 
-final numberDataViewModelProvider = StateNotifierProvider<NumberDataViewModel, NumberDataState>((ref) {
+final numberDataViewModelProvider = StateNotifierProvider<NumericDataViewModel, NumericDataState>((ref) {
   final supabaseService = ref.watch(supabaseServiceProvider);
-  return NumberDataViewModel(supabaseService);
+  return NumericDataViewModel(supabaseService);
 });

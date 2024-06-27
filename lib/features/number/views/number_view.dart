@@ -15,7 +15,7 @@ class _NumberViewState extends ConsumerState<NumberView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(numberDataViewModelProvider.notifier).loadNumberData();
+      ref.read(numberDataViewModelProvider.notifier).loadNumericData();
     });
   }
 
@@ -31,7 +31,7 @@ class _NumberViewState extends ConsumerState<NumberView> {
     );
   }
 
-  Widget _buildBody(BuildContext context, NumberDataState state) {
+  Widget _buildBody(BuildContext context, NumericDataState state) {
     if (state.isLoading) {
       return Center(child: CircularProgressIndicator());
     } else if (state.error != null) {
@@ -43,7 +43,7 @@ class _NumberViewState extends ConsumerState<NumberView> {
         itemCount: state.data.length,
         itemBuilder: (context, index) {
           final numberData = state.data[index];
-          return NumberDataListItem(
+          return NumericDataListItem(
             numberData: numberData,
             onTap: () => Navigator.push(
               context,

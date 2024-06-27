@@ -9,7 +9,7 @@ final mockSensors = [
       publicId: 'temperature_sensor_$i',
       group: 'Ridge $i',
       name: 'Temperature Sensor $i',
-      dataType: 'Temperature',
+      dataType: 'Numeric<float>',
       createdAt: DateTime.now().subtract(Duration(days: 1)),
       updatedAt: DateTime.now(),
     ),
@@ -18,7 +18,7 @@ final mockSensors = [
       publicId: 'humidity_sensor_$i',
       group: 'Ridge $i',
       name: 'Humidity Sensor $i',
-      dataType: 'Humidity',
+      dataType: 'Numeric<float>',
       createdAt: DateTime.now().subtract(Duration(days: 1)),
       updatedAt: DateTime.now(),
     ),
@@ -27,7 +27,7 @@ final mockSensors = [
       publicId: 'water_level_sensor_$i',
       group: 'Ridge $i',
       name: 'Water Level Sensor $i',
-      dataType: 'Water Level',
+      dataType: 'Numeric<float>',
       createdAt: DateTime.now().subtract(Duration(days: 1)),
       updatedAt: DateTime.now(),
     ),
@@ -36,7 +36,7 @@ final mockSensors = [
       publicId: 'co2_sensor_$i',
       group: 'Ridge $i',
       name: 'CO2 Sensor $i',
-      dataType: 'CO2',
+      dataType: 'Numeric<float>',
       createdAt: DateTime.now().subtract(Duration(days: 1)),
       updatedAt: DateTime.now(),
     ),
@@ -45,7 +45,7 @@ final mockSensors = [
       publicId: 'light_sensor_$i',
       group: 'Ridge $i',
       name: 'Light Sensor $i',
-      dataType: 'Light',
+      dataType: 'Numeric<float>',
       createdAt: DateTime.now().subtract(Duration(days: 1)),
       updatedAt: DateTime.now(),
     ),
@@ -61,7 +61,7 @@ final mockData = [
         publicId: 'temperature_data_${j}_$i',
         createdAt: DateTime.now().subtract(Duration(minutes: i * 10)),
         value: 20 + random.nextDouble() * 10,
-        filePath: 'path/to/temperature_file_${j}_$i',
+        filePath: null,
       ),
   for (int i = 0; i < 144; i++)
     for (int j = 1; j <= 10; j++)
@@ -70,7 +70,7 @@ final mockData = [
         publicId: 'humidity_data_${j}_$i',
         createdAt: DateTime.now().subtract(Duration(minutes: i * 10)),
         value: 40 + random.nextDouble() * 20,
-        filePath: 'path/to/humidity_file_${j}_$i',
+        filePath: null,
       ),
   for (int i = 0; i < 144; i++)
     for (int j = 1; j <= 10; j++)
@@ -79,7 +79,7 @@ final mockData = [
         publicId: 'water_level_data_${j}_$i',
         createdAt: DateTime.now().subtract(Duration(minutes: i * 10)),
         value: 20 + random.nextDouble() * 30,
-        filePath: 'path/to/water_level_file_${j}_$i',
+        filePath: null,
       ),
   for (int i = 0; i < 144; i++)
     for (int j = 1; j <= 10; j++)
@@ -88,7 +88,7 @@ final mockData = [
         publicId: 'co2_data_${j}_$i',
         createdAt: DateTime.now().subtract(Duration(minutes: i * 10)),
         value: 300 + random.nextDouble() * 200,
-        filePath: 'path/to/co2_file_${j}_$i',
+        filePath: null,
       ),
   for (int i = 0; i < 144; i++)
     for (int j = 1; j <= 10; j++)
@@ -97,6 +97,6 @@ final mockData = [
         publicId: 'light_data_${j}_$i',
         createdAt: DateTime.now().subtract(Duration(minutes: i * 10)),
         value: 500 + random.nextDouble() * 1000,
-        filePath: 'path/to/light_file_${j}_$i',
+        filePath: null,
       ),
 ];

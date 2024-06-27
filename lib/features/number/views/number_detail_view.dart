@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../data/models/data_model.dart';
-import '../../../data/models/number_data_model.dart';
+import '../../../data/models/numeric_data_model.dart';
 
 class NumberDetailView extends StatelessWidget {
-  final NumberData numberData;
+  final NumericData numberData;
 
   NumberDetailView({required this.numberData});
 

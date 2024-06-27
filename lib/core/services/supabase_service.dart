@@ -1,67 +1,132 @@
-import 'package:canaspad/data/models/number_data_model.dart';
+import 'package:canaspad/data/mock/sensing_data_sample.dart';
+import 'package:canaspad/data/models/data_model.dart';
+import 'package:canaspad/data/models/numeric_data_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../data/mock/sensing_data_sample.dart';
-import '../../data/models/data_model.dart';
-import '../../data/models/sensor_model.dart';
+// データキャッシュクラス
+class DataCache {
+  List<Map<String, dynamic>>? _allData;
+
+  void setAllData(List<Map<String, dynamic>> data) {
+    _allData = data;
+  }
+
+  List<Map<String, dynamic>>? getAllData() {
+    return _allData;
+  }
+
+  List<NumericData> getNumericData() {
+    if (_allData == null) {
+      return [];
+    }
+    final numericData = _allData!
+        .where((data) => (data['data_type'] as String?)?.toLowerCase().contains('numeric') ?? false)
+        .map((data) {
+          try {
+            return NumericData.fromJson(data);
+          } catch (e) {
+            return null;
+          }
+        })
+        .whereType<NumericData>()
+        .toList();
+    return numericData;
+  }
+
+  Data? getLatestNumericData(String sensorId) {
+    if (_allData == null) return null;
+    var sensorData = _allData!.firstWhere((data) => data['public_id'] == sensorId, orElse: () => {});
+    if (sensorData.isEmpty) return null;
+
+    var dataList = sensorData['DATA'] as List<dynamic>;
+    if (dataList.isEmpty) return null;
+
+    var latestData = dataList.reduce((a, b) => DateTime.parse(a['created_at']).isAfter(DateTime.parse(b['created_at'])) ? a : b);
+    return Data.fromJson(latestData);
+  }
+}
 
 abstract class SupabaseService {
-  Future<List<NumberData>> fetchNumberData();
-  Future<Data> fetchLatestNumberData(String sensorId);
+  Future<void> fetchAllData();
+  List<NumericData> getNumericData();
+  Data? getLatestNumericData(String sensorId);
 }
 
 class RealSupabaseService implements SupabaseService {
   SupabaseClient get _client => Supabase.instance.client;
+  final DataCache _cache = DataCache();
 
   @override
-  Future<List<NumberData>> fetchNumberData() async {
+  Future<void> fetchAllData() async {
     try {
-      final response = await _client.from('SENSOR').select();
-      final sensors = (response as List).map((sensor) => Sensor.fromJson(sensor)).toList();
-
-      List<NumberData> NumberDataList = [];
-      for (var sensor in sensors) {
-        final dataResponse = await _client.from('DATA').select().eq('sensor_id', sensor.publicId);
-        final data = (dataResponse as List).map((data) => Data.fromJson(data)).toList();
-        NumberDataList.add(NumberData.fromJson(sensor.toJson(), data));
-      }
-
-      return NumberDataList;
+      final response = await _client.from('SENSOR').select('''
+          public_id,
+          "group",
+          name,
+          data_type,
+          created_at,
+          updated_at,
+          DATA (
+            sensor_id,
+            public_id,
+            created_at,
+            value,
+            file_path
+          )
+        ''').limit(10000, referencedTable: 'DATA');
+      _cache.setAllData(response);
     } catch (e) {
-      throw Exception('Error fetching sensing data: $e');
+      throw Exception('Error fetching all data: $e');
     }
   }
 
   @override
-  Future<Data> fetchLatestNumberData(String sensorId) async {
-    final response = await _client.from('DATA').select().eq('sensor_id', sensorId).order('created_at', ascending: false).limit(1).single();
+  List<NumericData> getNumericData() {
+    return _cache.getNumericData();
+  }
 
-    return Data.fromJson(response);
+  @override
+  Data? getLatestNumericData(String sensorId) {
+    return _cache.getLatestNumericData(sensorId);
   }
 }
 
 class MockSupabaseService implements SupabaseService {
+  final DataCache _cache = DataCache();
+
   @override
-  Future<List<NumberData>> fetchNumberData() async {
-    // モックデータを返す
-    return mockSensors.map((sensor) {
+  Future<void> fetchAllData() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
+    final mockAllData = mockSensors.map((sensor) {
       final sensorData = mockData.where((data) => data.sensorId == sensor.publicId).toList();
-      return NumberData.fromJson(sensor.toJson(), sensorData);
+      return {
+        'public_id': sensor.publicId,
+        'group': sensor.group,
+        'name': sensor.name,
+        'data_type': sensor.dataType,
+        'created_at': sensor.createdAt.toIso8601String(),
+        'updated_at': sensor.updatedAt.toIso8601String(),
+        'DATA': sensorData
+            .map((data) => {
+                  'sensor_id': data.sensorId,
+                  'public_id': data.publicId,
+                  'created_at': data.createdAt?.toIso8601String(),
+                  'value': data.value,
+                  'file_path': data.filePath,
+                })
+            .toList(),
+      };
     }).toList();
+    _cache.setAllData(mockAllData);
   }
 
   @override
-  Future<Data> fetchLatestNumberData(String sensorId) async {
-    // モックデータから最新のデータを返す
-    final sensorData = mockData.where((data) => data.sensorId == sensorId).toList();
-    return sensorData.isNotEmpty
-        ? sensorData.last
-        : Data(
-            sensorId: sensorId,
-            publicId: 'mock_data_1',
-            createdAt: DateTime.now(),
-            value: 25.0,
-            filePath: 'path/to/mock_file',
-          );
+  List<NumericData> getNumericData() {
+    return _cache.getNumericData();
+  }
+
+  @override
+  Data? getLatestNumericData(String sensorId) {
+    return _cache.getLatestNumericData(sensorId);
   }
 }
