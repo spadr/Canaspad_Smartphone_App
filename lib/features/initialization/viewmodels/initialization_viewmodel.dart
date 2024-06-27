@@ -2,21 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:canaspad/core/services/secure_storage_service.dart';
+import 'package:canaspad/core/services/supabase_service.dart';
+import 'package:canaspad/features/environment/models/environment_model.dart';
+import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/secure_storage_service.dart';
-import '../../../providers.dart';
-import '../../environment/models/environment_model.dart';
-
 class InitializationViewModel extends ChangeNotifier {
   final SecureStorageService _secureStorageService;
+  final SupabaseService _supabaseService;
 
-  InitializationViewModel(this._secureStorageService);
+  InitializationViewModel(this._secureStorageService, this._supabaseService) {}
 
-  /// Initializes the app by saving sample data if no environment data exists.
+  /// Initializes the app by saving sample data if no environment data exists and fetches all data.
   Future<void> initializeApp() async {
     await _loadOrSaveSampleData();
+    await _fetchAllData();
   }
 
   /// Saves sample environment data if no data exists in secure storage.
@@ -48,6 +50,15 @@ class InitializationViewModel extends ChangeNotifier {
     }
   }
 
+  /// Fetches all data using the SupabaseService.
+  Future<void> _fetchAllData() async {
+    try {
+      await _supabaseService.fetchAllData();
+    } catch (e) {
+      // エラーハンドリングをここに追加することができます
+    }
+  }
+
   /// Checks network connectivity.
   Future<bool> checkNetworkConnectivity() async {
     try {
@@ -61,5 +72,6 @@ class InitializationViewModel extends ChangeNotifier {
 
 final initializationViewModelProvider = ChangeNotifierProvider((ref) {
   final secureStorageService = ref.watch(secureStorageServiceProvider);
-  return InitializationViewModel(secureStorageService);
+  final supabaseService = ref.watch(supabaseServiceProvider);
+  return InitializationViewModel(secureStorageService, supabaseService);
 });

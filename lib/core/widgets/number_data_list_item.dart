@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/number_data_model.dart';
+import '../../data/models/numeric_data_model.dart';
 
-class NumberDataListItem extends StatelessWidget {
-  final NumberData numberData;
+class NumericDataListItem extends StatelessWidget {
+  final NumericData numberData;
   final VoidCallback onTap;
 
-  const NumberDataListItem({
+  const NumericDataListItem({
     Key? key,
     required this.numberData,
     required this.onTap,

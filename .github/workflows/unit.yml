@@ -49,4 +49,7 @@ jobs:
     - name: Run smoke tests
       run: flutter test test/integration/smoke_test.dart
 
+    - name: Run integration tests
+      run: flutter test test/integration/
+
       # act -W '.github/workflows/unit.yml'

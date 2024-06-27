@@ -4,15 +4,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/secure_storage_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../providers.dart';
 import '../models/environment_model.dart';
 
 class EnvironmentViewModel extends ChangeNotifier {
   final SecureStorageService _secureStorageService;
+  final SupabaseService _supabaseService;
   List<EnvironmentModel> environments = [];
+  bool _disposed = false;
 
-  EnvironmentViewModel(this._secureStorageService) {
+  EnvironmentViewModel(this._secureStorageService, this._supabaseService) {
     loadEnvironments();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 
   Future<void> loadEnvironments() async {
@@ -31,7 +47,7 @@ class EnvironmentViewModel extends ChangeNotifier {
     _saveEnvironments();
   }
 
-  void saveEnvironment(EnvironmentModel environment) {
+  Future<void> saveEnvironment(EnvironmentModel environment) async {
     final index = environments.indexWhere((e) => e.envName == environment.envName);
     if (index != -1) {
       environments[index] = environment;
@@ -39,7 +55,12 @@ class EnvironmentViewModel extends ChangeNotifier {
       environments.add(environment);
     }
     _ensureOneSelectedEnvironment();
-    _saveEnvironments();
+    await _saveEnvironments();
+
+    // 環境が選択されている場合のみリフレッシュを行う
+    if (environment.selected == true) {
+      await _refreshDataAfterEnvironmentChange();
+    }
   }
 
   Future<bool> deleteEnvironment(EnvironmentModel environment) async {
@@ -47,18 +68,22 @@ class EnvironmentViewModel extends ChangeNotifier {
       return false; // 最後の環境設定は削除できない
     }
 
-    if (environment.selected == true) {
-      // 選択されている環境を削除する場合、別の環境を選択する
-      final otherEnvironment = environments.firstWhere((e) => e != environment);
-      otherEnvironment.selected = true;
+    final wasSelected = environment.selected == true;
+    environments.remove(environment);
+
+    if (wasSelected) {
+      // 選択されていた環境を削除した場合、別の環境を選択する
+      environments.first.selected = true;
+      await _saveEnvironments();
+      await _refreshDataAfterEnvironmentChange();
+    } else {
+      await _saveEnvironments();
     }
 
-    environments.remove(environment);
-    _saveEnvironments();
     return true;
   }
 
-  void selectEnvironment(EnvironmentModel selectedEnvironment) {
+  Future<void> selectEnvironment(EnvironmentModel selectedEnvironment) async {
     if (selectedEnvironment.selected == true) {
       return; // 既に選択されている環境の選択を解除することはできない
     }
@@ -66,7 +91,11 @@ class EnvironmentViewModel extends ChangeNotifier {
     for (var env in environments) {
       env.selected = (env == selectedEnvironment);
     }
-    _saveEnvironments();
+    await _saveEnvironments();
+    // 選択された環境が変更された場合のみリフレッシュを行う
+    if (selectedEnvironment != environments.firstWhere((env) => env.selected == true)) {
+      await _refreshDataAfterEnvironmentChange();
+    }
   }
 
   void _ensureOneSelectedEnvironment() {
@@ -101,9 +130,18 @@ class EnvironmentViewModel extends ChangeNotifier {
     }
     return 'Environment $index';
   }
+
+  Future<void> _refreshDataAfterEnvironmentChange() async {
+    if (_disposed) return;
+    // 環境設定が変更された後のデータ更新処理
+    await _supabaseService.fetchAllData();
+    // ここで他の必要なデータ更新処理を追加できます
+    notifyListeners();
+  }
 }
 
 final environmentViewModelProvider = ChangeNotifierProvider((ref) {
   final secureStorageService = ref.watch(secureStorageServiceProvider);
-  return EnvironmentViewModel(secureStorageService);
+  final supabaseService = ref.watch(supabaseServiceProvider);
+  return EnvironmentViewModel(secureStorageService, supabaseService);
 });
