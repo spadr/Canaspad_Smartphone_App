@@ -23,7 +23,7 @@ class DataRefreshService extends StateNotifier<void> {
     await refreshData();
 
     // 関連するViewModelの更新
-    _ref.read(numberDataViewModelProvider.notifier).loadNumericData();
+    _ref.read(numericDataViewModelProvider.notifier).loadNumericData();
     // 他の必要なViewModelの更新処理をここに追加
   }
 }

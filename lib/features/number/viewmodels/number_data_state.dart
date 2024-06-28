@@ -36,15 +36,15 @@ class NumericDataViewModel extends StateNotifier<NumericDataState> {
   Future<void> loadNumericData() async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      final numberData = await _supabaseService.getNumericData();
-      state = state.copyWith(data: numberData, isLoading: false);
+      final numericData = await _supabaseService.getNumericData();
+      state = state.copyWith(data: numericData, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 }
 
-final numberDataViewModelProvider = StateNotifierProvider<NumericDataViewModel, NumericDataState>((ref) {
+final numericDataViewModelProvider = StateNotifierProvider<NumericDataViewModel, NumericDataState>((ref) {
   final supabaseService = ref.watch(supabaseServiceProvider);
   return NumericDataViewModel(supabaseService);
 });

@@ -15,13 +15,13 @@ class _NumberViewState extends ConsumerState<NumberView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(numberDataViewModelProvider.notifier).loadNumericData();
+      ref.read(numericDataViewModelProvider.notifier).loadNumericData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(numberDataViewModelProvider);
+    final state = ref.watch(numericDataViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -42,13 +42,13 @@ class _NumberViewState extends ConsumerState<NumberView> {
       return ListView.builder(
         itemCount: state.data.length,
         itemBuilder: (context, index) {
-          final numberData = state.data[index];
+          final numericData = state.data[index];
           return NumericDataListItem(
-            numberData: numberData,
+            numericData: numericData,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NumberDetailView(numberData: numberData),
+                builder: (context) => NumberDetailView(numericData: numericData),
               ),
             ),
           );
