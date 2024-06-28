@@ -21,6 +21,10 @@ class InitializationViewModel extends ChangeNotifier {
     await _fetchAllData();
   }
 
+  Future<EnvironmentModel?> getSelectedEnvironment() async {
+    return await _secureStorageService.readEnvironment();
+  }
+
   /// Saves sample environment data if no data exists in secure storage.
   Future<void> _loadOrSaveSampleData() async {
     final environments = await _secureStorageService.readAllEnvironments();

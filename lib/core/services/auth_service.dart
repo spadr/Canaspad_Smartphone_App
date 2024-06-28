@@ -12,6 +12,7 @@ class SupabaseAuthService implements AuthService {
 
   Future<void> signIn(String email, String password) async {
     try {
+      print('Signing in with email: $email');
       await _client.auth.signInWithPassword(
         email: email,
         password: password,

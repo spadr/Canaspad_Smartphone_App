@@ -38,7 +38,7 @@ class DataCache {
     var sensorData = _allData!.firstWhere((data) => data['public_id'] == sensorId, orElse: () => {});
     if (sensorData.isEmpty) return null;
 
-    var dataList = sensorData['DATA'] as List<dynamic>;
+    var dataList = sensorData['data'] as List<dynamic>;
     if (dataList.isEmpty) return null;
 
     var latestData = dataList.reduce((a, b) => DateTime.parse(a['created_at']).isAfter(DateTime.parse(b['created_at'])) ? a : b);
@@ -59,21 +59,21 @@ class RealSupabaseService implements SupabaseService {
   @override
   Future<void> fetchAllData() async {
     try {
-      final response = await _client.from('SENSOR').select('''
+      final response = await _client.from('sensor').select('''
           public_id,
           "group",
           name,
           data_type,
           created_at,
           updated_at,
-          DATA (
+          data (
             sensor_id,
             public_id,
             created_at,
             value,
             file_path
           )
-        ''').limit(10000, referencedTable: 'DATA');
+        ''').limit(10000, referencedTable: 'data');
       _cache.setAllData(response);
     } catch (e) {
       throw Exception('Error fetching all data: $e');
@@ -106,7 +106,7 @@ class MockSupabaseService implements SupabaseService {
         'data_type': sensor.dataType,
         'created_at': sensor.createdAt.toIso8601String(),
         'updated_at': sensor.updatedAt.toIso8601String(),
-        'DATA': sensorData
+        'data': sensorData
             .map((data) => {
                   'sensor_id': data.sensorId,
                   'public_id': data.publicId,

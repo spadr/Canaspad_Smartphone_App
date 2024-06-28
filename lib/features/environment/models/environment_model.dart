@@ -28,6 +28,24 @@ class EnvironmentModel {
     this.selected,
   });
 
+  EnvironmentModel copyWith({
+    String? anonKey,
+    String? supabaseUrl,
+    String? envName,
+    String? password,
+    String? emailAddress,
+    bool? selected,
+  }) {
+    return EnvironmentModel(
+      anonKey: anonKey ?? this.anonKey,
+      supabaseUrl: supabaseUrl ?? this.supabaseUrl,
+      envName: envName ?? this.envName,
+      password: password ?? this.password,
+      emailAddress: emailAddress ?? this.emailAddress,
+      selected: selected ?? this.selected,
+    );
+  }
+
   /// Converts an [EnvironmentModel] instance to a JSON map.
   ///
   /// This method is useful for saving the environment configuration
