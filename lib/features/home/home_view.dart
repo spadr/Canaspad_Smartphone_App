@@ -15,7 +15,7 @@ class _HomeViewState extends State<HomeView> {
   int _selectedTabIndex = 0;
 
   static List<_TabItem> _tabItems = [
-    _TabItem(icon: Icons.trending_up, label: 'Numeric', view: NumberView(), key: Key('NumberTab')),
+    _TabItem(icon: Icons.trending_up, label: 'Numeric', view: NumericView(), key: Key('NumberTab')),
     _TabItem(icon: Icons.movie, label: 'Image', view: ImageView(), key: Key('ImageTab')),
     _TabItem(icon: Icons.notifications, label: 'Notification', view: NotificationView(), key: Key('NotificationTab')),
     _TabItem(icon: Icons.settings, label: 'Setting', view: SettingView(), key: Key('SettingTab')),

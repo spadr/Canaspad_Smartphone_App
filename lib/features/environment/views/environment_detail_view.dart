@@ -25,12 +25,6 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
     environment = widget.environment;
   }
 
-  @override
-  void dispose() {
-    // ここで必要なクリーンアップ処理を行う
-    super.dispose();
-  }
-
   Future<void> _saveEnvironment() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -109,28 +103,28 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
                       key: Key('EnvironmentNameField'),
                       labelText: 'Environment Name',
                       initialValue: environment.envName,
-                      onSaved: (value) => environment.envName = value,
+                      onSaved: (value) => environment = environment.copyWith(envName: value),
                     ),
                     SizedBox(height: 16.0),
                     EnvironmentTextField(
                       key: Key('AnonKeyField'),
                       labelText: 'Anon Key',
                       initialValue: environment.anonKey,
-                      onSaved: (value) => environment.anonKey = value,
+                      onSaved: (value) => environment = environment.copyWith(anonKey: value),
                     ),
                     SizedBox(height: 16.0),
                     EnvironmentTextField(
                       key: Key('SupabaseUrlField'),
                       labelText: 'Supabase URL',
                       initialValue: environment.supabaseUrl,
-                      onSaved: (value) => environment.supabaseUrl = value,
+                      onSaved: (value) => environment = environment.copyWith(supabaseUrl: value),
                     ),
                     SizedBox(height: 16.0),
                     EnvironmentTextField(
                       key: Key('PasswordField'),
                       labelText: 'Password',
                       initialValue: environment.password,
-                      onSaved: (value) => environment.password = value,
+                      onSaved: (value) => environment = environment.copyWith(password: value),
                       obscureText: true,
                     ),
                     SizedBox(height: 16.0),
@@ -138,20 +132,18 @@ class _EnvironmentDetailViewState extends ConsumerState<EnvironmentDetailView> {
                       key: Key('EmailAddressField'),
                       labelText: 'Email Address',
                       initialValue: environment.emailAddress,
-                      onSaved: (value) => environment.emailAddress = value,
+                      onSaved: (value) => environment = environment.copyWith(emailAddress: value),
                     ),
                     SizedBox(height: 16.0),
                     SwitchListTile(
                       key: Key('SelectEnvironmentSwitch'),
                       title: Text('Select this environment'),
                       value: environment.selected ?? false,
-                      onChanged: environment.selected == true
-                          ? null
-                          : (value) {
-                              if (value) {
-                                ref.read(environmentViewModelProvider.notifier).selectEnvironment(environment);
-                              }
-                            },
+                      onChanged: (value) {
+                        setState(() {
+                          environment = environment.copyWith(selected: value);
+                        });
+                      },
                     ),
                     SizedBox(height: 16.0),
                     Row(

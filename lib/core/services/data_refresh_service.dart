@@ -15,7 +15,7 @@ class DataRefreshService extends StateNotifier<void> {
     // 他の必要なデータ更新処理をここに追加
   }
 
-  void onEnvironmentChanged(EnvironmentModel newEnvironment) async {
+  Future<void> onEnvironmentChanged(EnvironmentModel newEnvironment) async {
     // 環境設定が変更されたときの処理
     // Supabaseの再初期化などが必要な場合はここで行う
 
@@ -23,7 +23,7 @@ class DataRefreshService extends StateNotifier<void> {
     await refreshData();
 
     // 関連するViewModelの更新
-    _ref.read(numberDataViewModelProvider.notifier).loadNumericData();
+    _ref.read(numericDataViewModelProvider.notifier).loadNumericData();
     // 他の必要なViewModelの更新処理をここに追加
   }
 }

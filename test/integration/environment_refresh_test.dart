@@ -1,76 +1,154 @@
 import 'package:canaspad/core/services/secure_storage_service.dart';
-import 'package:canaspad/core/services/supabase_service.dart';
-import 'package:canaspad/features/environment/models/environment_model.dart';
-import 'package:canaspad/features/environment/views/environment_view.dart';
+import 'package:canaspad/core/widgets/number_data_list_item.dart';
+import 'package:canaspad/main.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockSecureStorageService extends Mock implements SecureStorageService {}
-
-class MockSupabaseService extends Mock implements SupabaseService {}
+import 'package:integration_test/integration_test.dart';
 
 void main() {
-  late MockSecureStorageService mockSecureStorageService;
-  late MockSupabaseService mockSupabaseService;
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  group('Data Refresh Tests', () {
+    testWidgets('Data refresh when environment is changed', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            flavorProvider.overrideWithProvider(StateProvider((ref) => 'develop')),
+            secureStorageServiceProvider.overrideWithProvider(Provider((ref) => MockSecureStorageService())),
+            supabaseServiceProvider.overrideWithProvider(mockSupabaseServiceProvider),
+          ],
+          child: MyApp(flavor: 'develop'),
+        ),
+      );
 
-  setUp(() {
-    mockSecureStorageService = MockSecureStorageService();
-    mockSupabaseService = MockSupabaseService();
+      // Initialization完了を待つ
+      await tester.pumpAndSettle();
 
-    reset(mockSecureStorageService);
-    reset(mockSupabaseService);
-  });
+      // NumericViewに移動
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
 
-  testWidgets('Changing and saving environment triggers data refresh', (WidgetTester tester) async {
-    final environments = [
-      EnvironmentModel(envName: "Environment 1", selected: true),
-      EnvironmentModel(envName: "Environment 2", selected: false),
-    ];
+      // 最初のNumericDataを取得
+      final initialNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
 
-    when(() => mockSecureStorageService.readAllEnvironments()).thenAnswer((_) async => environments);
-    when(() => mockSecureStorageService.writeSecureData(any(), any())).thenAnswer((_) async {});
-    when(() => mockSupabaseService.fetchAllData()).thenAnswer((_) async {});
+      // EnvironmentViewに移動
+      await tester.tap(find.byKey(Key('EnvironmentTab')));
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          secureStorageServiceProvider.overrideWithValue(mockSecureStorageService),
-          supabaseServiceProvider.overrideWithValue(mockSupabaseService),
-        ],
-        child: MaterialApp(home: EnvironmentView()),
-      ),
-    );
+      // 2番目の環境を選択
+      await tester.tap(find.byKey(Key('EnvironmentTile_1')));
+      await tester.pumpAndSettle();
 
-    await tester.pumpAndSettle();
+      // Saveボタンを押下
+      await tester.tap(find.byKey(Key('SaveEnvironmentButton')));
+      await tester.pumpAndSettle();
 
-    verify(() => mockSecureStorageService.readAllEnvironments()).called(1);
+      // NumericViewに戻る
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
 
-    expect(find.textContaining('Environment 1'), findsOneWidget);
-    expect(find.textContaining('Environment 2'), findsOneWidget);
+      // 更新されたNumericDataを取得
+      final updatedNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
 
-    // Environment 2 を選択
-    await tester.tap(find.textContaining('Environment 2'));
-    await tester.pumpAndSettle();
+      // データがリフレッシュされたことを確認
+      expect(initialNumericData != updatedNumericData, true);
+    });
 
-    // Environment を編集
-    await tester.enterText(find.byKey(Key('EnvironmentNameField')), 'Environment 2 Updated');
-    await tester.enterText(find.byKey(Key('SupabaseUrlField')), 'https://supabase.io');
-    await tester.enterText(find.byKey(Key('AnonKeyField')), 'anon_key');
-    await tester.enterText(find.byKey(Key('PasswordField')), 'password');
-    await tester.enterText(find.byKey(Key('EmailAddressField')), 'email@email.jp');
-    await tester.tap(find.byKey(Key('SelectEnvironmentSwitch')));
+    testWidgets('Data refresh when environment content is changed', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            flavorProvider.overrideWithProvider(StateProvider((ref) => 'develop')),
+            secureStorageServiceProvider.overrideWithProvider(Provider((ref) => MockSecureStorageService())),
+            supabaseServiceProvider.overrideWithProvider(mockSupabaseServiceProvider),
+          ],
+          child: MyApp(flavor: 'develop'),
+        ),
+      );
 
-    // SaveEnvironmentButton をタップ
-    await tester.tap(find.byKey(Key('SaveEnvironmentButton')));
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    // 環境の選択と保存で2回 writeSecureData が呼ばれることを確認
-    verify(() => mockSecureStorageService.writeSecureData(any(), any())).called(2);
+      // NumericViewに移動
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
 
-    // データリフレッシュが1回呼び出されたことを確認
-    verify(() => mockSupabaseService.fetchAllData()).called(1);
+      // 最初のNumericDataを取得
+      final initialNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
+
+      // EnvironmentViewに移動
+      await tester.tap(find.byKey(Key('EnvironmentTab')));
+      await tester.pumpAndSettle();
+
+      // 最初の環境を編集
+      await tester.tap(find.byKey(Key('EnvironmentTile_0')));
+      await tester.pumpAndSettle();
+
+      // 環境名を入力
+      await tester.enterText(find.byKey(Key('EnvironmentNameField')), 'Updated Environment');
+      await tester.pumpAndSettle();
+
+      // Saveボタンを押下
+      await tester.tap(find.byKey(Key('SaveEnvironmentButton')));
+      await tester.pumpAndSettle();
+
+      // NumericViewに戻る
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
+
+      // 更新されたNumericDataを取得
+      final updatedNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
+
+      // データがリフレッシュされたことを確認
+      expect(initialNumericData != updatedNumericData, true);
+    });
+
+    testWidgets('Data refresh when both environment selection and content are changed', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            flavorProvider.overrideWithProvider(StateProvider((ref) => 'develop')),
+            secureStorageServiceProvider.overrideWithProvider(Provider((ref) => MockSecureStorageService())),
+            supabaseServiceProvider.overrideWithProvider(mockSupabaseServiceProvider),
+          ],
+          child: MyApp(flavor: 'develop'),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // NumericViewに移動
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
+
+      // 最初のNumericDataを取得
+      final initialNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
+
+      // EnvironmentViewに移動
+      await tester.tap(find.byKey(Key('EnvironmentTab')));
+      await tester.pumpAndSettle();
+
+      // 2番目の環境を選択 & 編集
+      await tester.tap(find.byKey(Key('EnvironmentTile_1')));
+      await tester.pumpAndSettle();
+
+      // 環境名を入力
+      await tester.enterText(find.byKey(Key('EnvironmentNameField')), 'Updated Environment');
+      await tester.pumpAndSettle();
+
+      // Saveボタンを押下
+      await tester.tap(find.byKey(Key('SaveEnvironmentButton')));
+      await tester.pumpAndSettle();
+
+      // NumericViewに戻る
+      await tester.tap(find.byKey(Key('NumberTab')));
+      await tester.pumpAndSettle();
+
+      // 更新されたNumericDataを取得
+      final updatedNumericData = tester.widget<NumericDataListItem>(find.byType(NumericDataListItem).first).numericData;
+
+      // データがリフレッシュされたことを確認
+      expect(initialNumericData != updatedNumericData, true);
+    });
   });
 }

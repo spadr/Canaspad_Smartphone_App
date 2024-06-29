@@ -5,27 +5,27 @@ import '../../../core/widgets/number_data_list_item.dart';
 import '../viewmodels/number_data_state.dart';
 import 'number_detail_view.dart';
 
-class NumberView extends ConsumerStatefulWidget {
+class NumericView extends ConsumerStatefulWidget {
   @override
-  _NumberViewState createState() => _NumberViewState();
+  _NumericViewState createState() => _NumericViewState();
 }
 
-class _NumberViewState extends ConsumerState<NumberView> {
+class _NumericViewState extends ConsumerState<NumericView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(numberDataViewModelProvider.notifier).loadNumericData();
+      ref.read(numericDataViewModelProvider.notifier).loadNumericData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(numberDataViewModelProvider);
+    final state = ref.watch(numericDataViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Number View'),
+        title: Text('Numeric View'),
       ),
       body: _buildBody(context, state),
     );
@@ -42,13 +42,13 @@ class _NumberViewState extends ConsumerState<NumberView> {
       return ListView.builder(
         itemCount: state.data.length,
         itemBuilder: (context, index) {
-          final numberData = state.data[index];
+          final numericData = state.data[index];
           return NumericDataListItem(
-            numberData: numberData,
+            numericData: numericData,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NumberDetailView(numberData: numberData),
+                builder: (context) => NumberDetailView(numericData: numericData),
               ),
             ),
           );
