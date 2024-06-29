@@ -31,18 +31,21 @@ class EnvironmentView extends ConsumerWidget {
                 title: Text(env.envName ?? 'No Name'),
                 subtitle: Text('Supabase URL: ${env.supabaseUrl ?? "N/A"}'),
                 trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () async {
-                  final result = await Navigator.of(context).push(
+                onTap: () {
+                  Navigator.of(context)
+                      .push(
                     MaterialPageRoute(
                       builder: (context) => EnvironmentDetailView(
                         key: Key('EnvironmentDetailView'),
                         environment: env,
                       ),
                     ),
-                  );
-                  if (result == true) {
-                    viewModel.loadEnvironments();
-                  }
+                  )
+                      .then((value) {
+                    if (value == true) {
+                      viewModel.loadEnvironments();
+                    }
+                  });
                 },
               ),
             );

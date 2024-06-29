@@ -1,5 +1,6 @@
 import 'package:canaspad/core/services/app_state_service.dart';
 import 'package:canaspad/features/home/home_view.dart';
+import 'package:canaspad/features/initialization/viewmodels/initialization_viewmodel.dart';
 import 'package:canaspad/features/mini_game/game_main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ class InitializationView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.read(initializationViewModelProvider).initializeApp();
     final appState = ref.watch(appStateServiceProvider);
 
     return Scaffold(

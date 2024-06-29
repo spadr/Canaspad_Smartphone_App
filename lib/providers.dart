@@ -1,5 +1,6 @@
 // lib/providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/services/auth_service.dart';
 import 'core/services/secure_storage_service.dart';
@@ -20,7 +21,8 @@ final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   if (flavor == 'develop') {
     return MockSupabaseService();
   } else {
-    return RealSupabaseService();
+    final client = Supabase.instance.client;
+    return RealSupabaseService(client);
   }
 });
 

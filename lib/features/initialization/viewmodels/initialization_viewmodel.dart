@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:canaspad/core/services/secure_storage_service.dart';
 import 'package:canaspad/core/services/supabase_service.dart';
+import 'package:canaspad/data/mock/environment_sample.dart';
 import 'package:canaspad/features/environment/models/environment_model.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
@@ -29,24 +30,7 @@ class InitializationViewModel extends ChangeNotifier {
   Future<void> _loadOrSaveSampleData() async {
     final environments = await _secureStorageService.readAllEnvironments();
     if (environments.isEmpty) {
-      final sampleData = [
-        EnvironmentModel(
-          anonKey: null,
-          supabaseUrl: null,
-          envName: "Environment 1",
-          password: null,
-          emailAddress: null,
-          selected: true,
-        ),
-        EnvironmentModel(
-          anonKey: null,
-          supabaseUrl: null,
-          envName: "Environment 2",
-          password: null,
-          emailAddress: null,
-          selected: false,
-        ),
-      ];
+      final sampleData = sampleEnvironmentData;
       await _secureStorageService.writeSecureData(
         'envSettings',
         jsonEncode(sampleData.map((e) => e.toJson()).toList()),

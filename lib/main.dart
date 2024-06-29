@@ -17,7 +17,6 @@ Future<void> initializeApp() async {
   final flavor = const String.fromEnvironment('FLAVOR', defaultValue: 'production');
   EnvironmentModel? selectedEnvironment;
 
-  // フレーバーに応じてプロバイダーを上書き
   final overrides = [
     flavorProvider.overrideWithProvider(StateProvider((ref) => flavor)),
   ];
@@ -29,11 +28,6 @@ Future<void> initializeApp() async {
       await Supabase.initialize(
         url: selectedEnvironment.supabaseUrl ?? 'YOUR_DEFAULT_SUPABASE_URL',
         anonKey: selectedEnvironment.anonKey ?? 'YOUR_DEFAULT_SUPABASE_ANON_KEY',
-      );
-    } else {
-      await Supabase.initialize(
-        url: 'YOUR_DEFAULT_SUPABASE_URL',
-        anonKey: 'YOUR_DEFAULT_SUPABASE_ANON_KEY',
       );
     }
     if (selectedEnvironment != null) {

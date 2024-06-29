@@ -5,12 +5,12 @@ import '../../../core/widgets/number_data_list_item.dart';
 import '../viewmodels/number_data_state.dart';
 import 'number_detail_view.dart';
 
-class NumberView extends ConsumerStatefulWidget {
+class NumericView extends ConsumerStatefulWidget {
   @override
-  _NumberViewState createState() => _NumberViewState();
+  _NumericViewState createState() => _NumericViewState();
 }
 
-class _NumberViewState extends ConsumerState<NumberView> {
+class _NumericViewState extends ConsumerState<NumericView> {
   @override
   void initState() {
     super.initState();
@@ -25,7 +25,7 @@ class _NumberViewState extends ConsumerState<NumberView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Number View'),
+        title: Text('Numeric View'),
       ),
       body: _buildBody(context, state),
     );

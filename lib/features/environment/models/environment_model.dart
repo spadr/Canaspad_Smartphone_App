@@ -1,34 +1,28 @@
+import 'package:uuid/uuid.dart';
+
 /// A model class representing an environment configuration.
 class EnvironmentModel {
-  /// The anonymous key used for authentication.
+  final String id;
   String? anonKey;
-
-  /// The URL of the Supabase instance.
   String? supabaseUrl;
-
-  /// The name of the environment.
   String? envName;
-
-  /// The password associated with the environment.
   String? password;
-
-  /// The email address associated with the environment.
   String? emailAddress;
-
-  /// Indicates whether this environment is selected as the primary environment.
   bool? selected;
 
   /// Constructor to create an instance of [EnvironmentModel].
   EnvironmentModel({
+    String? id,
     this.anonKey,
     this.supabaseUrl,
     this.envName,
     this.password,
     this.emailAddress,
     this.selected,
-  });
+  }) : id = id ?? Uuid().v4();
 
   EnvironmentModel copyWith({
+    String? id,
     String? anonKey,
     String? supabaseUrl,
     String? envName,
@@ -37,6 +31,7 @@ class EnvironmentModel {
     bool? selected,
   }) {
     return EnvironmentModel(
+      id: id ?? this.id,
       anonKey: anonKey ?? this.anonKey,
       supabaseUrl: supabaseUrl ?? this.supabaseUrl,
       envName: envName ?? this.envName,
@@ -47,10 +42,8 @@ class EnvironmentModel {
   }
 
   /// Converts an [EnvironmentModel] instance to a JSON map.
-  ///
-  /// This method is useful for saving the environment configuration
-  /// to a secure storage or sending it over the network.
   Map<String, dynamic> toJson() => {
+        'id': id,
         'anon_key': anonKey,
         'supabase_url': supabaseUrl,
         'env_name': envName,
@@ -60,10 +53,8 @@ class EnvironmentModel {
       };
 
   /// Creates an [EnvironmentModel] instance from a JSON map.
-  ///
-  /// This factory constructor is useful for creating an environment
-  /// configuration instance from data retrieved from secure storage or a network response.
   factory EnvironmentModel.fromJson(Map<String, dynamic> json) => EnvironmentModel(
+        id: json['id'],
         anonKey: json['anon_key'],
         supabaseUrl: json['supabase_url'],
         envName: json['env_name'],

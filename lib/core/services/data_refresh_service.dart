@@ -15,7 +15,7 @@ class DataRefreshService extends StateNotifier<void> {
     // 他の必要なデータ更新処理をここに追加
   }
 
-  void onEnvironmentChanged(EnvironmentModel newEnvironment) async {
+  Future<void> onEnvironmentChanged(EnvironmentModel newEnvironment) async {
     // 環境設定が変更されたときの処理
     // Supabaseの再初期化などが必要な場合はここで行う
 

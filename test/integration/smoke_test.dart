@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:canaspad/core/services/auth_service.dart';
 import 'package:canaspad/core/services/secure_storage_service.dart';
 import 'package:canaspad/core/services/supabase_service.dart';
-import 'package:canaspad/features/environment/models/environment_model.dart';
+import 'package:canaspad/data/mock/environment_sample.dart';
 import 'package:canaspad/features/environment/views/environment_view.dart';
 import 'package:canaspad/features/image/image_view.dart';
 import 'package:canaspad/features/notification/notification_view.dart';
@@ -41,30 +41,26 @@ void main() {
 
   // MockSecureStorageServiceの初期データを設定
   final mockSecureStorageService = MockSecureStorageService()
-    ..writeSecureData(
-        'envSettings',
-        jsonEncode([EnvironmentModel(envName: "Test Environment 1", selected: true, supabaseUrl: "https://test.supabase.co", anonKey: "test_anon_key")]
-            .map((e) => e.toJson())
-            .toList()));
+    ..writeSecureData('envSettings', jsonEncode(sampleEnvironmentData.map((e) => e.toJson()).toList()));
 
   const waitDuration = Duration(seconds: 5);
 
   group('Smoke Tests', () {
     testWidgets('Application launches successfully', (WidgetTester tester) async {
       const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'develop');
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             secureStorageServiceProvider.overrideWithValue(mockSecureStorageService),
+            supabaseServiceProvider.overrideWithValue(MockSupabaseService()),
+            authServiceProvider.overrideWithValue(MockAuthService()),
           ],
           child: app.MyApp(flavor: flavor),
         ),
       );
-
-      // InitializationViewは一瞬なのでNumberViewをチェック
       await tester.pumpAndSettle(waitDuration);
-      expect(find.byType(NumberView), findsOneWidget);
+      // InitializationViewは一瞬なのでNumericViewをチェック
+      expect(find.byType(NumericView), findsOneWidget);
     });
 
     testWidgets('Navigation test', (WidgetTester tester) async {
@@ -83,12 +79,12 @@ void main() {
 
       // アプリの初期化を待つ
       await tester.pumpAndSettle(waitDuration);
-      expect(find.byType(NumberView), findsOneWidget);
+      expect(find.byType(NumericView), findsOneWidget);
 
       // ナビゲーションのテスト
       await tester.tap(find.byKey(const Key('NumberTab')));
       await tester.pumpAndSettle();
-      expect(find.byType(NumberView), findsOneWidget);
+      expect(find.byType(NumericView), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('ImageTab')));
       await tester.pumpAndSettle();
@@ -112,14 +108,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            if (flavor == 'develop') supabaseServiceProvider.overrideWithValue(MockSupabaseService()),
-            if (flavor == 'develop') authServiceProvider.overrideWithValue(MockAuthService()),
-            secureStorageServiceProvider.overrideWithValue(MockSecureStorageService()),
+            secureStorageServiceProvider.overrideWithValue(mockSecureStorageService),
+            supabaseServiceProvider.overrideWithValue(MockSupabaseService()),
+            authServiceProvider.overrideWithValue(MockAuthService()),
           ],
           child: app.MyApp(flavor: flavor),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(waitDuration);
 
       // EnvironmentTab をタップ
       await tester.tap(find.byKey(Key('EnvironmentTab')));
@@ -203,8 +199,8 @@ void main() {
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
 
-      // NumberView が表示されるまで待つ
-      expect(find.byType(NumberView), findsOneWidget);
+      // NumericView が表示されるまで待つ
+      expect(find.byType(NumericView), findsOneWidget);
     });
   });
 

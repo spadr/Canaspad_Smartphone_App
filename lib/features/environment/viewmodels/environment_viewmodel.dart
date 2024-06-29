@@ -1,19 +1,19 @@
 import 'dart:convert';
 
 import 'package:canaspad/core/services/app_state_service.dart';
+import 'package:canaspad/core/services/data_refresh_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/secure_storage_service.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../providers.dart';
 import '../models/environment_model.dart';
 
 class EnvironmentViewModel extends StateNotifier<List<EnvironmentModel>> {
   final SecureStorageService _secureStorageService;
-  final SupabaseService _supabaseService;
+  final DataRefreshService _dataRefreshService;
   final Ref _ref;
 
-  EnvironmentViewModel(this._secureStorageService, this._supabaseService, this._ref) : super([]) {
+  EnvironmentViewModel(this._secureStorageService, this._dataRefreshService, this._ref) : super([]) {
     loadEnvironments();
   }
 
@@ -29,26 +29,38 @@ class EnvironmentViewModel extends StateNotifier<List<EnvironmentModel>> {
       selected: false,
     );
     state = [...state, newEnvironment];
-    _ensureOneSelectedEnvironment(state);
     _saveEnvironments();
   }
 
-  Future<void> saveEnvironment(EnvironmentModel environment) async {
-    final index = state.indexWhere((e) => e.envName == environment.envName);
-    List<EnvironmentModel> updatedEnvironments;
-    if (index != -1) {
-      updatedEnvironments = [...state];
-      updatedEnvironments[index] = environment;
-    } else {
-      updatedEnvironments = [...state, environment];
+  Future<void> saveEnvironment(EnvironmentModel editedEnvironment) async {
+    final updatedEnvironments = state.map((env) {
+      if (env.id == editedEnvironment.id) {
+        return editedEnvironment;
+      } else if (editedEnvironment.selected == true) {
+        return env.copyWith(selected: false);
+      }
+      return env;
+    }).toList();
+
+    // 選択された環境が1つだけであることを確認
+    final selectedEnvironments = updatedEnvironments.where((env) => env.selected == true).toList();
+    if (selectedEnvironments.isEmpty) {
+      // 選択された環境がない場合、最初の環境を選択
+      updatedEnvironments[0] = updatedEnvironments[0].copyWith(selected: true);
+    } else if (selectedEnvironments.length > 1) {
+      // 複数の環境が選択されている場合、最後に編集された環境以外の選択を解除
+      for (var i = 0; i < updatedEnvironments.length; i++) {
+        if (updatedEnvironments[i] != editedEnvironment) {
+          updatedEnvironments[i] = updatedEnvironments[i].copyWith(selected: false);
+        }
+      }
     }
-    _ensureOneSelectedEnvironment(updatedEnvironments);
+
     state = updatedEnvironments;
     await _saveEnvironments();
 
-    if (environment.selected == true) {
-      await _refreshDataAfterEnvironmentChange(environment);
-    }
+    final selectedEnvironment = updatedEnvironments.firstWhere((env) => env.selected == true);
+    await _refreshDataAfterEnvironmentChange(selectedEnvironment);
   }
 
   Future<bool> deleteEnvironment(EnvironmentModel environment) async {
@@ -56,48 +68,30 @@ class EnvironmentViewModel extends StateNotifier<List<EnvironmentModel>> {
       return false; // 最後の環境設定は削除できない
     }
 
-    final wasSelected = environment.selected == true;
-    final updatedEnvironments = state.where((e) => e != environment).toList();
-
-    if (wasSelected) {
-      updatedEnvironments.first.selected = true;
+    final updatedEnvironments = state.where((e) => e.id != environment.id).toList();
+    if (environment.selected == true && updatedEnvironments.isNotEmpty) {
+      updatedEnvironments[0] = updatedEnvironments[0].copyWith(selected: true);
     }
 
     state = updatedEnvironments;
     await _saveEnvironments();
 
-    if (wasSelected) {
-      await _refreshDataAfterEnvironmentChange(updatedEnvironments.first);
+    if (environment.selected == true && updatedEnvironments.isNotEmpty) {
+      await _refreshDataAfterEnvironmentChange(updatedEnvironments[0]);
     }
 
     return true;
   }
 
-  Future<void> selectEnvironment(EnvironmentModel selectedEnvironment) async {
-    if (selectedEnvironment.selected == true) {
-      return; // 既に選択されている環境の選択を解除することはできない
-    }
-
-    final updatedEnvironments = state.map((env) => env.copyWith(selected: env == selectedEnvironment)).toList();
-
-    state = updatedEnvironments;
-    await _saveEnvironments();
-
-    // AppStateService を使用して環境を変更し、ログインを行う
-    await _ref.read(appStateServiceProvider.notifier).changeEnvironment(selectedEnvironment);
-  }
-
   void _ensureOneSelectedEnvironment(List<EnvironmentModel> environments) {
-    if (environments.isEmpty) {
-      return;
-    }
+    if (environments.isEmpty) return;
 
     final selectedEnvironments = environments.where((e) => e.selected == true).toList();
     if (selectedEnvironments.isEmpty) {
-      environments.first.selected = true;
+      environments[0] = environments[0].copyWith(selected: true);
     } else if (selectedEnvironments.length > 1) {
       for (var i = 1; i < selectedEnvironments.length; i++) {
-        selectedEnvironments[i] = selectedEnvironments[i].copyWith(selected: false);
+        environments[i] = environments[i].copyWith(selected: false);
       }
     }
   }
@@ -118,13 +112,13 @@ class EnvironmentViewModel extends StateNotifier<List<EnvironmentModel>> {
   }
 
   Future<void> _refreshDataAfterEnvironmentChange(EnvironmentModel environment) async {
-    await _supabaseService.fetchAllData();
+    await _dataRefreshService.onEnvironmentChanged(environment);
     await _ref.read(appStateServiceProvider.notifier).changeEnvironment(environment);
   }
 }
 
 final environmentViewModelProvider = StateNotifierProvider<EnvironmentViewModel, List<EnvironmentModel>>((ref) {
   final secureStorageService = ref.watch(secureStorageServiceProvider);
-  final supabaseService = ref.watch(supabaseServiceProvider);
-  return EnvironmentViewModel(secureStorageService, supabaseService, ref);
+  final dataRefreshService = ref.watch(dataRefreshServiceProvider.notifier);
+  return EnvironmentViewModel(secureStorageService, dataRefreshService, ref);
 });

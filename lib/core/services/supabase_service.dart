@@ -53,8 +53,10 @@ abstract class SupabaseService {
 }
 
 class RealSupabaseService implements SupabaseService {
-  SupabaseClient get _client => Supabase.instance.client;
+  final SupabaseClient _client;
   final DataCache _cache = DataCache();
+
+  RealSupabaseService(this._client);
 
   @override
   Future<void> fetchAllData() async {
@@ -93,6 +95,7 @@ class RealSupabaseService implements SupabaseService {
 
 class MockSupabaseService implements SupabaseService {
   final DataCache _cache = DataCache();
+  int _counter = 0;
 
   @override
   Future<void> fetchAllData() async {
@@ -111,7 +114,7 @@ class MockSupabaseService implements SupabaseService {
                   'sensor_id': data.sensorId,
                   'public_id': data.publicId,
                   'created_at': data.createdAt?.toIso8601String(),
-                  'value': data.value,
+                  'value': data.value! + _counter,
                   'file_path': data.filePath,
                 })
             .toList(),
