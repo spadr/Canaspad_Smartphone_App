@@ -1,6 +1,8 @@
 import 'package:canaspad/data/mock/sensing_data_sample.dart';
 import 'package:canaspad/data/models/data_model.dart';
 import 'package:canaspad/data/models/numeric_data_model.dart';
+import 'package:canaspad/features/notification/models/notification_model.dart';
+import 'package:canaspad/features/notification/viewmodels/notification_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // データキャッシュクラス
@@ -54,9 +56,10 @@ abstract class SupabaseService {
 
 class RealSupabaseService implements SupabaseService {
   final SupabaseClient _client;
+  final NotificationViewModel _notificationViewModel;
   final DataCache _cache = DataCache();
 
-  RealSupabaseService(this._client);
+  RealSupabaseService(this._client, this._notificationViewModel);
 
   @override
   Future<void> fetchAllData() async {
@@ -78,7 +81,16 @@ class RealSupabaseService implements SupabaseService {
         ''').limit(10000, referencedTable: 'data');
       _cache.setAllData(response);
     } catch (e) {
-      throw Exception('Error fetching all data: $e');
+      final errorNotification = NotificationModel(
+        title: 'Supabase Error',
+        message: '$e',
+        type: 'error',
+        status: 'unread',
+        scheduledTime: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _notificationViewModel.addNotification(errorNotification);
     }
   }
 

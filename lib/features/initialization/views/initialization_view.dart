@@ -1,7 +1,9 @@
 import 'package:canaspad/core/services/app_state_service.dart';
+import 'package:canaspad/features/environment/views/environment_view.dart';
 import 'package:canaspad/features/home/home_view.dart';
 import 'package:canaspad/features/initialization/viewmodels/initialization_viewmodel.dart';
-import 'package:canaspad/features/mini_game/game_main.dart';
+import 'package:canaspad/features/notification/models/notification_model.dart';
+import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,44 +21,52 @@ class InitializationView extends ConsumerWidget {
       body: Center(
         child: appState.when(
           loading: () => CircularProgressIndicator(),
-          error: (error, stack) => _buildErrorWidget(context, ref, error.toString()),
+          error: (error, _) => _handleError(context, ref, error),
           data: (environment) {
-            if (environment != null) {
-              // ログイン成功時、HomeViewに遷移
+            if (environment == null) {
+              // 環境設定がない場合、環境設定画面に遷移
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => HomeView()),
+                  MaterialPageRoute(builder: (context) => EnvironmentView()),
                 );
               });
               return CircularProgressIndicator();
-            } else {
-              // 環境設定がない場合の処理
-              return Text('No environment configured. Please set up the environment.');
             }
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomeView()),
+              );
+            });
+            return CircularProgressIndicator();
           },
         ),
       ),
     );
   }
 
-  Widget _buildErrorWidget(BuildContext context, WidgetRef ref, String error) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Error: $error'),
-        ElevatedButton(
-          onPressed: () => ref.read(appStateServiceProvider.notifier).initializeApp(),
-          child: Text('Retry'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => MyGame()),
-            );
-          },
-          child: Text('Play Game'),
-        ),
-      ],
+  Widget _handleError(BuildContext context, WidgetRef ref, Object error) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _recordErrorNotification(ref, error.toString());
+      // エラーが発生した場合も、HomeViewに遷移します
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeView()),
+      );
+    });
+    return CircularProgressIndicator();
+  }
+
+  Future<void> _recordErrorNotification(WidgetRef ref, String errorMessage) async {
+    print('Error: $errorMessage');
+    final notificationViewModel = ref.read(notificationViewModelProvider.notifier);
+    final errorNotification = NotificationModel(
+      title: 'Initialization Error',
+      message: 'An error occurred during initialization: $errorMessage',
+      type: 'error',
+      status: 'unread',
+      scheduledTime: DateTime.now(),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
+    await notificationViewModel.addNotification(errorNotification);
   }
 }
