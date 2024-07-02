@@ -1,9 +1,8 @@
+import 'package:canaspad/core/widgets/number_data_list_item.dart';
+import 'package:canaspad/features/numeric/viewmodels/numeric_viewmodel.dart';
+import 'package:canaspad/features/numeric/views/numeric_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/widgets/number_data_list_item.dart';
-import '../viewmodels/number_data_state.dart';
-import 'number_detail_view.dart';
 
 class NumericView extends ConsumerStatefulWidget {
   @override
@@ -34,8 +33,6 @@ class _NumericViewState extends ConsumerState<NumericView> {
   Widget _buildBody(BuildContext context, NumericDataState state) {
     if (state.isLoading) {
       return Center(child: CircularProgressIndicator());
-    } else if (state.error != null) {
-      return Center(child: Text('Error: ${state.error}'));
     } else if (state.data.isEmpty) {
       return Center(child: Text('No data available'));
     } else {

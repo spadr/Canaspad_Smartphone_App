@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../environment/views/environment_view.dart';
 import '../image/image_view.dart';
-import '../notification/notification_view.dart';
-import '../number/views/number_view.dart';
+import '../notification/views/notification_view.dart';
+import '../numeric/views/numeric_view.dart';
 import '../setting/setting_view.dart';
 
 class HomeView extends StatefulWidget {

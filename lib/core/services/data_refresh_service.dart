@@ -1,6 +1,6 @@
 import 'package:canaspad/core/services/supabase_service.dart';
 import 'package:canaspad/features/environment/models/environment_model.dart';
-import 'package:canaspad/features/number/viewmodels/number_viewmodel.dart';
+import 'package:canaspad/features/numeric/viewmodels/numeric_viewmodel.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
