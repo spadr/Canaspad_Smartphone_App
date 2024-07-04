@@ -10,6 +10,8 @@ import 'package:canaspad/core/services/auth_service.dart';
 import 'package:canaspad/core/services/secure_storage_service.dart';
 import 'package:canaspad/core/services/supabase_service.dart';
 import 'package:canaspad/data/mock/environment_sample.dart';
+import 'package:canaspad/features/auto_monitoring/views/auto_monitoring_view.dart';
+import 'package:canaspad/features/auto_monitoring/views/monitoring_condition_detail_view.dart';
 import 'package:canaspad/features/environment/views/environment_view.dart';
 import 'package:canaspad/features/image/image_view.dart';
 import 'package:canaspad/features/notification/models/notification_model.dart';
@@ -17,7 +19,6 @@ import 'package:canaspad/features/notification/viewmodels/notification_viewmodel
 import 'package:canaspad/features/notification/views/notification_view.dart';
 import 'package:canaspad/features/numeric/views/numeric_detail_view.dart';
 import 'package:canaspad/features/numeric/views/numeric_view.dart';
-import 'package:canaspad/features/setting/setting_view.dart';
 import 'package:canaspad/main.dart' as app;
 import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
@@ -151,9 +152,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(NotificationView), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('SettingTab')));
+      await tester.tap(find.byKey(const Key('MonitoringTab')));
       await tester.pumpAndSettle();
-      expect(find.byType(SettingView), findsOneWidget);
+      expect(find.byType(AutoMonitoringView), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('EnvironmentTab')));
       await tester.pumpAndSettle();
@@ -307,6 +308,47 @@ void main() {
 
       addTearDown(container.dispose);
     });
+
+    testWidgets('Monitoring view test', (WidgetTester tester) async {
+      const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'develop');
+      final mockNotificationViewModel = MockNotificationViewModel();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            secureStorageServiceProvider.overrideWithValue(mockSecureStorageService),
+            supabaseServiceProvider.overrideWithValue(MockSupabaseService()),
+            authServiceProvider.overrideWithValue(MockAuthService()),
+            notificationViewModelProvider
+                .overrideWithProvider(StateNotifierProvider<NotificationViewModel, NotificationState>((ref) => mockNotificationViewModel)),
+          ],
+          child: const app.MyApp(flavor: flavor),
+        ),
+      );
+      await tester.pumpAndSettle(waitDuration);
+
+      await tester.tap(find.byKey(const Key('MonitoringTab')));
+      await tester.pumpAndSettle();
+
+      // 最初のセンサーの監視状態を切り替える
+      await tester.tap(find.byType(IconButton).first);
+      await tester.pumpAndSettle();
+
+      // 最初のセンサーの詳細画面に遷移
+      await tester.tap(find.byType(ListTile).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(MonitoringConditionDetailView), findsOneWidget);
+
+      // DataMissing のスイッチをオフにする
+      await tester.tap(find.widgetWithText(SwitchListTile, 'dataMissing'));
+      await tester.pumpAndSettle();
+
+      // 保存ボタンを押す
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      // AutoMonitoringView に戻っていることを確認
+      expect(find.byType(AutoMonitoringView), findsOneWidget);
+    });
   });
 
   group('View Tests', () {
@@ -330,28 +372,6 @@ void main() {
       await tester.tap(find.byKey(const Key('ImageTab')));
       await tester.pumpAndSettle();
       expect(find.text('Image View Content'), findsOneWidget);
-    });
-
-    testWidgets('Setting view test', (WidgetTester tester) async {
-      const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'develop');
-      final mockNotificationViewModel = MockNotificationViewModel();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            secureStorageServiceProvider.overrideWithValue(mockSecureStorageService),
-            supabaseServiceProvider.overrideWithValue(MockSupabaseService()),
-            authServiceProvider.overrideWithValue(MockAuthService()),
-            notificationViewModelProvider
-                .overrideWithProvider(StateNotifierProvider<NotificationViewModel, NotificationState>((ref) => mockNotificationViewModel)),
-          ],
-          child: const app.MyApp(flavor: flavor),
-        ),
-      );
-      await tester.pumpAndSettle(waitDuration);
-
-      await tester.tap(find.byKey(const Key('SettingTab')));
-      await tester.pumpAndSettle();
-      expect(find.text('Setting View Content'), findsOneWidget);
     });
   });
 }

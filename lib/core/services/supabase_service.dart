@@ -1,6 +1,7 @@
 import 'package:canaspad/data/mock/sensing_data_sample.dart';
 import 'package:canaspad/data/models/data_model.dart';
 import 'package:canaspad/data/models/numeric_data_model.dart';
+import 'package:canaspad/data/models/sensor_model.dart';
 import 'package:canaspad/features/notification/models/notification_model.dart';
 import 'package:canaspad/features/notification/viewmodels/notification_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,6 +53,7 @@ abstract class SupabaseService {
   Future<void> fetchAllData();
   List<NumericData> getNumericData();
   Data? getLatestNumericData(String sensorId);
+  List<Sensor> getSensors();
 }
 
 class RealSupabaseService implements SupabaseService {
@@ -103,6 +105,11 @@ class RealSupabaseService implements SupabaseService {
   Data? getLatestNumericData(String sensorId) {
     return _cache.getLatestNumericData(sensorId);
   }
+
+  @override
+  List<Sensor> getSensors() {
+    return mockSensors;
+  }
 }
 
 class MockSupabaseService implements SupabaseService {
@@ -143,5 +150,10 @@ class MockSupabaseService implements SupabaseService {
   @override
   Data? getLatestNumericData(String sensorId) {
     return _cache.getLatestNumericData(sensorId);
+  }
+
+  @override
+  List<Sensor> getSensors() {
+    return _cache.getAllData()!.map((data) => Sensor.fromJson(data)).toList();
   }
 }

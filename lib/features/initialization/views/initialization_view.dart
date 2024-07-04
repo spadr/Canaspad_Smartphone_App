@@ -56,7 +56,6 @@ class InitializationView extends ConsumerWidget {
   }
 
   Future<void> _recordErrorNotification(WidgetRef ref, String errorMessage) async {
-    print('Error: $errorMessage');
     final notificationViewModel = ref.read(notificationViewModelProvider.notifier);
     final errorNotification = NotificationModel(
       title: 'Initialization Error',
