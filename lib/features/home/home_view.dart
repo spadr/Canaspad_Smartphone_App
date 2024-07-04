@@ -1,10 +1,10 @@
+import 'package:canaspad/features/auto_monitoring/views/auto_monitoring_view.dart';
 import 'package:flutter/material.dart';
 
 import '../environment/views/environment_view.dart';
 import '../image/image_view.dart';
 import '../notification/views/notification_view.dart';
 import '../numeric/views/numeric_view.dart';
-import '../setting/setting_view.dart';
 
 class HomeView extends StatefulWidget {
   @override
@@ -18,7 +18,7 @@ class _HomeViewState extends State<HomeView> {
     _TabItem(icon: Icons.trending_up, label: 'Numeric', view: NumericView(), key: Key('NumberTab')),
     _TabItem(icon: Icons.movie, label: 'Image', view: ImageView(), key: Key('ImageTab')),
     _TabItem(icon: Icons.notifications, label: 'Notification', view: NotificationView(), key: Key('NotificationTab')),
-    _TabItem(icon: Icons.settings, label: 'Setting', view: SettingView(), key: Key('SettingTab')),
+    _TabItem(icon: Icons.settings, label: 'Monitoring', view: AutoMonitoringView(), key: Key('MonitoringTab')),
     _TabItem(icon: Icons.eco, label: 'Environment', view: EnvironmentView(), key: Key('EnvironmentTab')),
   ];
 

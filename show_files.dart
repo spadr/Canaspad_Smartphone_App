@@ -89,3 +89,4 @@ void main(List<String> arguments) {
 
 
 // dart show_files.dart "C:\github\canaspad_smartphone_app\lib"
+// dart show_files.dart "C:\github\canaspad_smartphone_app\lib\features\auto_monitoring"

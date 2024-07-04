@@ -18,24 +18,24 @@ class Sensor {
   // Convert Sensor to JSON
   Map<String, dynamic> toJson() {
     return {
-      'publicId': publicId,
+      'public_id': publicId,
       'group': group,
       'name': name,
-      'dataType': dataType,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'data_type': dataType,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
   // Create Sensor from JSON
   factory Sensor.fromJson(Map<String, dynamic> json) {
     return Sensor(
-      publicId: json['publicId'] ?? '',
+      publicId: json['public_id'] ?? '',
       group: json['group'] ?? '',
       name: json['name'] ?? '',
-      dataType: json['dataType'] ?? '',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
+      dataType: json['data_type'] ?? '',
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : DateTime.now(),
     );
   }
 }
