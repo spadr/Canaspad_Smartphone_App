@@ -9,7 +9,7 @@ on:
         - synchronize
 
 env:
-  FLUTTER_VERSION: '3.22.1'
+  FLUTTER_VERSION: '3.22.2'
   CACHE_KEY_PREFIX: 'pub-cache'
 
 jobs:
@@ -37,8 +37,15 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
-    - name: Run integration tests
-      run: flutter test test/integration/
-    
+    - name: Run unit tests
+      run: flutter test test/unit/
+
     - name: Run widget tests
       run: flutter test test/widget/
+
+    - name: Run smoke tests
+      run: flutter test test/integration/smoke_test.dart
+
+    - name: Run integration tests
+      run: flutter test test/integration/
+

@@ -35,7 +35,7 @@ set(PROJECT_BUILD_DIR "${PROJECT_DIR}/build/" PARENT_SCOPE)
 set(AOT_LIBRARY "${PROJECT_DIR}/build/lib/libapp.so" PARENT_SCOPE)
 
 list(APPEND FLUTTER_LIBRARY_HEADERS
-  "fl_basic_message_channel.h"
+  "fl_basic_message_group.h"
   "fl_binary_codec.h"
   "fl_binary_messenger.h"
   "fl_dart_project.h"
@@ -44,7 +44,7 @@ list(APPEND FLUTTER_LIBRARY_HEADERS
   "fl_json_method_codec.h"
   "fl_message_codec.h"
   "fl_method_call.h"
-  "fl_method_channel.h"
+  "fl_method_group.h"
   "fl_method_codec.h"
   "fl_method_response.h"
   "fl_plugin_registrar.h"

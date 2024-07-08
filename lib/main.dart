@@ -1,71 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/services/secure_storage_service.dart';
+import 'features/environment/models/environment_model.dart';
+import 'features/initialization/views/initialization_view.dart';
 import 'providers.dart';
-import 'views/initialization_view.dart';
 
-void main(List<String> args) {
-  // 引数を解析してモードとフレーバーを設定
-  String mode = 'release'; // デフォルトはrelease
-  String flavor = 'production'; // デフォルトはproduction
+void main() async {
+  await initializeApp();
+}
 
-  if (args.contains('--mode')) {
-    int modeIndex = args.indexOf('--mode');
-    if (modeIndex != -1 && modeIndex + 1 < args.length) {
-      mode = args[modeIndex + 1];
+Future<void> initializeApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final flavor = const String.fromEnvironment('FLAVOR', defaultValue: 'production');
+  EnvironmentModel? selectedEnvironment;
+
+  final overrides = [
+    flavorProvider.overrideWithProvider(StateProvider((ref) => flavor)),
+  ];
+
+  if (flavor != 'develop') {
+    final secureStorageService = FlutterSecureStorageService();
+    selectedEnvironment = await secureStorageService.readEnvironment();
+    if (selectedEnvironment != null) {
+      await Supabase.initialize(
+        url: selectedEnvironment.supabaseUrl ?? 'YOUR_DEFAULT_SUPABASE_URL',
+        anonKey: selectedEnvironment.anonKey ?? 'YOUR_DEFAULT_SUPABASE_ANON_KEY',
+      );
     }
+    if (selectedEnvironment != null) {
+      overrides.add(selectedEnvironmentProvider.overrideWithProvider(StateProvider((ref) => selectedEnvironment)));
+    }
+  } else {
+    // 開発用の場合、モックのサービスを使用
+    overrides.add(supabaseServiceProvider.overrideWithProvider(mockSupabaseServiceProvider));
+    overrides.add(secureStorageServiceProvider.overrideWithProvider(Provider((ref) => MockSecureStorageService())));
   }
 
-  if (args.contains('--flavor')) {
-    int flavorIndex = args.indexOf('--flavor');
-    if (flavorIndex != -1 && flavorIndex + 1 < args.length) {
-      flavor = args[flavorIndex + 1];
-    }
-  }
-
-  runApp(ProviderScope(
-    overrides: [
-      modeProvider.overrideWithValue(mode),
-      flavorProvider.overrideWithValue(flavor),
-    ],
-    child: MyApp(mode: mode, flavor: flavor),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: overrides,
+      child: MyApp(flavor: flavor),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  final String mode;
   final String flavor;
 
-  MyApp({required this.mode, required this.flavor});
+  const MyApp({Key? key, required this.flavor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: _getAppTitle(),
-      theme: _getAppTheme(),
+      title: 'Canaspad_IoT',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
       home: InitializationView(flavor: flavor),
     );
-  }
-
-  String _getAppTitle() {
-    return 'Time Series Data App ($flavor - $mode)';
-  }
-
-  ThemeData _getAppTheme() {
-    switch (flavor) {
-      case 'develop':
-        return ThemeData(
-          primarySwatch: Colors.blue,
-        );
-      case 'staging':
-        return ThemeData(
-          primarySwatch: Colors.orange,
-        );
-      case 'production':
-      default:
-        return ThemeData(
-          primarySwatch: Colors.green,
-        );
-    }
   }
 }
