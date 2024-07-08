@@ -13,7 +13,9 @@ import 'package:canaspad/data/mock/environment_sample.dart';
 import 'package:canaspad/features/auto_monitoring/views/auto_monitoring_view.dart';
 import 'package:canaspad/features/auto_monitoring/views/monitoring_condition_detail_view.dart';
 import 'package:canaspad/features/environment/views/environment_view.dart';
-import 'package:canaspad/features/image/image_view.dart';
+import 'package:canaspad/features/image/views/image_detail_view.dart';
+import 'package:canaspad/features/image/views/image_tile_view.dart';
+import 'package:canaspad/features/image/views/image_view.dart';
 import 'package:canaspad/features/notification/models/notification_model.dart';
 import 'package:canaspad/features/notification/viewmodels/notification_viewmodel.dart';
 import 'package:canaspad/features/notification/views/notification_view.dart';
@@ -349,9 +351,7 @@ void main() {
       // AutoMonitoringView に戻っていることを確認
       expect(find.byType(AutoMonitoringView), findsOneWidget);
     });
-  });
 
-  group('View Tests', () {
     testWidgets('Image view test', (WidgetTester tester) async {
       const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'develop');
       final mockNotificationViewModel = MockNotificationViewModel();
@@ -369,9 +369,52 @@ void main() {
       );
       await tester.pumpAndSettle(waitDuration);
 
+      // ImageViewに移動
       await tester.tap(find.byKey(const Key('ImageTab')));
       await tester.pumpAndSettle();
-      expect(find.text('Image View Content'), findsOneWidget);
+
+      // ImageViewが表示されていることを確認
+      expect(find.byType(ImageView), findsOneWidget);
+
+      // 少なくとも1つの画像センサーが表示されていることを確認
+      expect(find.byType(Card), findsAtLeastNWidgets(1));
+
+      // 最初の画像センサーをタップ
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pumpAndSettle();
+
+      // ImageTileViewが表示されていることを確認
+      expect(find.byType(ImageTileView), findsOneWidget);
+
+      // 少なくとも1つの画像タイルが表示されていることを確認
+      expect(find.byType(GridView), findsOneWidget);
+
+      // 最初の画像タイルをタップ
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pumpAndSettle();
+
+      // ImageDetailViewが表示されていることを確認
+      expect(find.byType(ImageDetailView), findsOneWidget);
+
+      // 画像が表示されていることを確認（開発環境ではRawImageを使用）
+      expect(find.byType(RawImage), findsOneWidget);
+
+      // スライダーが存在することを確認
+      expect(find.byType(Slider), findsOneWidget);
+
+      // 戻るボタンをタップしてImageTileViewに戻る
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      // ImageTileViewが表示されていることを確認
+      expect(find.byType(ImageTileView), findsOneWidget);
+
+      // もう一度戻るボタンをタップしてImageViewに戻る
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      // ImageViewが表示されていることを確認
+      expect(find.byType(ImageView), findsOneWidget);
     });
   });
 }

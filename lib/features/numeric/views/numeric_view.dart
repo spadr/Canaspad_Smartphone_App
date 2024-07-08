@@ -24,7 +24,7 @@ class _NumericViewState extends ConsumerState<NumericView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Numeric View'),
+        title: Text('Numeric Sensors'),
       ),
       body: _buildBody(context, state),
     );
