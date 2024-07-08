@@ -1,5 +1,8 @@
 import 'dart:math';
 
+import 'package:canaspad/core/utils/image_generator.dart';
+import 'package:canaspad/features/image/models/image_model.dart';
+
 import '../models/data_model.dart';
 import '../models/sensor_model.dart';
 
@@ -100,3 +103,54 @@ final mockData = [
         filePath: null,
       ),
 ];
+
+// モックの画像センサーデータ
+final mockImageSensors = [
+  for (int i = 1; i <= 5; i++)
+    ImageSensor(
+      publicId: 'camera_sensor_$i',
+      group: 'Area $i',
+      name: 'Camera Sensor $i',
+      dataType: 'jpg',
+      createdAt: DateTime.now().subtract(Duration(days: 1)),
+      updatedAt: DateTime.now(),
+      data: List.generate(
+          10,
+          (index) => ImageData(
+                sensorId: 'camera_sensor_$i',
+                publicId: 'image_data_${i}_$index',
+                createdAt: DateTime.now().subtract(Duration(minutes: index * 30)),
+                image: null,
+                filePath: 'https://picsum.photos/seed/${i * 10 + index}/300/200',
+              )),
+    ),
+];
+
+// モックの画像センサーデータを取得する非同期関数
+Future<List<ImageSensor>> getMockImageSensors() async {
+  List<ImageSensor> sensors = [];
+  for (int i = 1; i <= 10; i++) {
+    List<ImageData> sensorData = [];
+    for (int j = 0; j < 100; j++) {
+      final createdAt = DateTime.now().subtract(Duration(minutes: j * 30));
+      final image = await ImageGenerator.generateImage('Mock Image ${i}_$j', width: 300, height: 200); // ImageGeneratorで画像生成
+      sensorData.add(ImageData(
+        sensorId: 'camera_sensor_$i',
+        publicId: 'image_data_${i}_$j',
+        createdAt: createdAt,
+        image: image, // 生成した画像をセット
+        filePath: 'https://picsum.photos/seed/${i * 10 + j}/300/200', // 本番環境用のパスも保持
+      ));
+    }
+    sensors.add(ImageSensor(
+      publicId: 'camera_sensor_$i',
+      group: 'Area $i',
+      name: 'Camera Sensor $i',
+      dataType: 'jpg',
+      createdAt: DateTime.now().subtract(Duration(days: 1)),
+      updatedAt: DateTime.now(),
+      data: sensorData,
+    ));
+  }
+  return sensors;
+}

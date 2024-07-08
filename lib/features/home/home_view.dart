@@ -2,7 +2,7 @@ import 'package:canaspad/features/auto_monitoring/views/auto_monitoring_view.dar
 import 'package:flutter/material.dart';
 
 import '../environment/views/environment_view.dart';
-import '../image/image_view.dart';
+import '../image/views/image_view.dart';
 import '../notification/views/notification_view.dart';
 import '../numeric/views/numeric_view.dart';
 
