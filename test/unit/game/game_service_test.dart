@@ -1,7 +1,7 @@
-import 'package:canaspad/mini_game/models/beam.dart';
-import 'package:canaspad/mini_game/models/engineer.dart';
-import 'package:canaspad/mini_game/models/insect.dart';
-import 'package:canaspad/mini_game/services/game_service.dart';
+import 'package:canaspad/features/mini_game/models/beam.dart';
+import 'package:canaspad/features/mini_game/models/engineer.dart';
+import 'package:canaspad/features/mini_game/models/insect.dart';
+import 'package:canaspad/features/mini_game/services/game_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';

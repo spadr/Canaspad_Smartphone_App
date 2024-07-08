@@ -1,4 +1,4 @@
-import 'package:canaspad/mini_game/models/insect.dart';
+import 'package:canaspad/features/mini_game/models/insect.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
