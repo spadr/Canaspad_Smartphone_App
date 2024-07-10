@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // データキャッシュクラス
 class DataCache {
   List<Map<String, dynamic>>? _allData;
+  Map<String, List<ImageData>> _imageDataCache = {};
 
   void setAllData(List<Map<String, dynamic>> data) {
     _allData = data;
@@ -47,6 +48,14 @@ class DataCache {
     var latestData = dataList.reduce((a, b) => DateTime.parse(a['created_at']).isAfter(DateTime.parse(b['created_at'])) ? a : b);
     return Data.fromJson(latestData);
   }
+
+  void cacheImageData(String sensorId, List<ImageData> imageData) {
+    _imageDataCache[sensorId] = imageData;
+  }
+
+  List<ImageData>? getCachedImageData(String sensorId) {
+    return _imageDataCache[sensorId];
+  }
 }
 
 abstract class SupabaseService {
@@ -54,6 +63,8 @@ abstract class SupabaseService {
   List<NumericData> getNumericData();
   Data? getLatestNumericData(String sensorId);
   List<Sensor> getSensors();
+  Future<List<ImageSensor>> getImageSensors();
+  Future<List<ImageData>> getImageDataForSensor(String sensorId, {int minutes = 30});
 }
 
 class RealSupabaseService implements SupabaseService {
@@ -110,11 +121,54 @@ class RealSupabaseService implements SupabaseService {
   List<Sensor> getSensors() {
     return mockSensors;
   }
+
+  @override
+  Future<List<ImageSensor>> getImageSensors() async {
+    final response = await _client.from('sensor').select('''
+      *,
+      data (
+        sensor_id,
+        public_id,
+        created_at,
+        file_path
+      )
+    ''').eq('data_type', 'jpg').or('data_type.eq.png');
+
+    return response.map((json) => ImageSensor.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<ImageData>> getImageDataForSensor(String sensorId, {int minutes = 30}) async {
+    final now = DateTime.now();
+    final startTime = now.subtract(Duration(minutes: minutes));
+
+    final response = await _client.from('data').select().eq('sensor_id', sensorId).gte('created_at', startTime.toIso8601String()).order('created_at');
+
+    return response.map((json) => ImageData.fromJson(json)).toList();
+  }
 }
 
 class MockSupabaseService implements SupabaseService {
   final DataCache _cache = DataCache();
   int _counter = 0;
+  List<ImageSensor> _mockImageSensors = []; // モックの画像センサーデータを保持
+  bool _isInitialized = false; // 初期化フラグをプライベートに変更
+
+  MockSupabaseService() {
+    _initializeMockImageSensors();
+  }
+
+  // モックの画像センサーデータを初期化する関数
+  Future<void> _initializeMockImageSensors() async {
+    if (_isInitialized) {
+      return;
+    }
+    _mockImageSensors = await getMockImageSensors();
+    _mockImageSensors.forEach((sensor) {
+      _cache.cacheImageData(sensor.publicId, sensor.data);
+    });
+    _isInitialized = true;
+  }
 
   @override
   Future<void> fetchAllData() async {
@@ -156,4 +210,24 @@ class MockSupabaseService implements SupabaseService {
   List<Sensor> getSensors() {
     return _cache.getAllData()!.map((data) => Sensor.fromJson(data)).toList();
   }
+
+  @override
+  Future<List<ImageSensor>> getImageSensors() async {
+    await _initializeMockImageSensors();
+    return _mockImageSensors;
+  }
+
+  @override
+  Future<List<ImageData>> getImageDataForSensor(String sensorId, {int minutes = 30}) async {
+    // キャッシュされた画像データを取得
+    final cachedImageData = _cache.getCachedImageData(sensorId);
+    if (cachedImageData != null) {
+      return cachedImageData;
+    } else {
+      // キャッシュがない場合は空リストを返す
+      return [];
+    }
+  }
+
+  bool get isInitialized => _isInitialized;
 }
