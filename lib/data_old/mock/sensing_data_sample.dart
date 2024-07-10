@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:canaspad/core/utils/image_generator.dart';
-import 'package:canaspad/features/image/models/image_model.dart';
+import 'package:canaspad/features_old/image/models/image_model.dart';
 
 import '../models/data_model.dart';
 import '../models/sensor_model.dart';

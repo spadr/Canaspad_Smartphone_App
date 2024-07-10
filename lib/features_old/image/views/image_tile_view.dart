@@ -1,5 +1,5 @@
-import 'package:canaspad/features/image/models/image_model.dart';
-import 'package:canaspad/features/image/views/image_detail_view.dart';
+import 'package:canaspad/features_old/image/models/image_model.dart';
+import 'package:canaspad/features_old/image/views/image_detail_view.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,5 +1,5 @@
-import 'package:canaspad/core/services/supabase_service.dart';
-import 'package:canaspad/features/image/models/image_model.dart';
+import 'package:canaspad/core_old/services/supabase_service.dart';
+import 'package:canaspad/features_old/image/models/image_model.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

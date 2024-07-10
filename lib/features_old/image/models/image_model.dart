@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:canaspad/data/models/sensor_model.dart';
+import 'package:canaspad/data_old/models/sensor_model.dart';
 
 class ImageData {
   final String? sensorId;

@@ -1,4 +1,4 @@
-import 'package:canaspad/features/image/models/image_model.dart';
+import 'package:canaspad/features_old/image/models/image_model.dart';
 import 'package:flutter/material.dart';
 
 class ImageDetailView extends StatefulWidget {

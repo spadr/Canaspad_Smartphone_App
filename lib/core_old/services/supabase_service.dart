@@ -2,6 +2,7 @@ import 'package:canaspad/data_old/mock/sensing_data_sample.dart';
 import 'package:canaspad/data_old/models/data_model.dart';
 import 'package:canaspad/data_old/models/numeric_data_model.dart';
 import 'package:canaspad/data_old/models/sensor_model.dart';
+import 'package:canaspad/features_old/image/models/image_model.dart';
 import 'package:canaspad/features_old/notification/models/notification_model.dart';
 import 'package:canaspad/features_old/notification/viewmodels/notification_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
