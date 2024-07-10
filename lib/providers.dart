@@ -1,13 +1,17 @@
+import 'package:canaspad/core/services/mock_flutter_secure_storage.dart';
+import 'package:canaspad/core/services/supabase_client_manager.dart';
+import 'package:canaspad/features/environment/services/environment_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mockito/mockito.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'core/services/auth_service.dart';
-import 'core/services/secure_storage_service.dart';
-import 'core/services/supabase_service.dart';
-import 'features/environment/models/environment_model.dart';
-import 'features/notification/viewmodels/notification_viewmodel.dart';
+import 'core_old/services/auth_service.dart';
+import 'core_old/services/secure_storage_service.dart';
+import 'core_old/services/supabase_service.dart';
+import 'features_old/environment/models/environment_model.dart';
+import 'features_old/notification/viewmodels/notification_viewmodel.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   final flavor = ref.watch(flavorProvider);
@@ -61,4 +65,24 @@ final notificationViewModelProvider = StateNotifierProvider<NotificationViewMode
   final storage = ref.watch(secureStorageServiceProvider);
   final localNotifications = ref.watch(notificationPluginProvider);
   return NotificationViewModel(storage, localNotifications);
+});
+
+final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
+  final flavor = ref.watch(flavorProvider);
+  if (flavor == 'develop') {
+    return MockFlutterSecureStorage();
+  } else {
+    return const FlutterSecureStorage();
+  }
+});
+
+final supabaseClientManagerProvider = Provider<SupabaseClientManager>((ref) {
+  final environmentService = ref.watch(environmentServiceProvider);
+  return SupabaseClientManager(environmentService);
+});
+
+final environmentServiceProvider = Provider<EnvironmentService>((ref) {
+  final secureStorage = ref.watch(secureStorageProvider);
+  final flavor = ref.watch(flavorProvider);
+  return EnvironmentService(secureStorage, flavor);
 });

@@ -1,5 +1,5 @@
-import 'package:canaspad/core/services/secure_storage_service.dart';
-import 'package:canaspad/core/widgets/number_data_list_item.dart';
+import 'package:canaspad/core_old/services/secure_storage_service.dart';
+import 'package:canaspad/core_old/widgets/number_data_list_item.dart';
 import 'package:canaspad/main.dart';
 import 'package:canaspad/providers.dart';
 import 'package:flutter/material.dart';
