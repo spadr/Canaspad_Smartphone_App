@@ -56,6 +56,8 @@ void main(List<String> arguments) {
   // 再帰的にディレクトリ構造とファイル内容を表示する関数
   void listDirectory(Directory dir, int depth, String prefix) {
     if (depth > maxDepth) return;
+    // ディレクトリのパスに”old”が含まれている場合はスキップ
+    if (dir.path.contains('old')) return;
 
     final indent = prefix.isEmpty ? '' : '$prefix|-- ';
     logSink.writeln('$indent${dir.path}');
@@ -89,4 +91,4 @@ void main(List<String> arguments) {
 
 
 // dart show_files.dart "C:\github\canaspad_smartphone_app\lib"
-// dart show_files.dart "C:\github\canaspad_smartphone_app\lib\features\image"
+// dart show_files.dart "C:\github\canaspad_smartphone_app\lib\core"
