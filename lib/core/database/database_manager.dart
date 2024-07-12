@@ -12,7 +12,7 @@ class DatabaseManager {
   AppDatabase? _database;
 
   Future<AppDatabase> get database async {
-    _database ??= await AppDatabase(_lazyDatabase); // _lazyDatabase を渡す
+    _database ??= AppDatabase(_lazyDatabase);
     return _database!;
   }
 

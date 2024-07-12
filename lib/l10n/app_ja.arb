@@ -1,0 +1,11 @@
+{
+    "error": "エラー",
+    "networkErrorMessage": "ネットワークエラーが発生しました。",
+    "databaseErrorMessage": "データベースエラーが発生しました。",
+    "generalErrorMessage": "エラーが発生しました。",
+    "authenticationErrorMessage": "認証エラーが発生しました。",
+    "synchronizationErrorMessage": "同期エラーが発生しました。",
+    "storageErrorMessage": "ストレージエラーが発生しました。",
+    "externalServiceErrorMessage": "外部サービスエラーが発生しました。",
+    "unknownErrorMessage": "不明なエラーが発生しました。"
+}

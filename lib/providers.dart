@@ -1,10 +1,29 @@
+import 'dart:io';
+
+import 'package:canaspad/core/database/app_database.dart';
+import 'package:canaspad/core/database/database_manager.dart';
+import 'package:canaspad/core/error/error_handler.dart';
+import 'package:canaspad/core/services/connectivity_service.dart';
 import 'package:canaspad/core/services/mock_flutter_secure_storage.dart';
+import 'package:canaspad/core/services/notification_service.dart';
 import 'package:canaspad/core/services/supabase_client_manager.dart';
+import 'package:canaspad/core/services/sync_manager/background_sync_manager.dart';
+import 'package:canaspad/core/services/sync_manager/full_sync_manager.dart';
+import 'package:canaspad/core/services/sync_manager/lightweight_sync_manager.dart';
+import 'package:canaspad/core/services/sync_manager/network_aware_sync_manager.dart';
+import 'package:canaspad/core/services/sync_manager/offline_operation_manager.dart';
+import 'package:canaspad/core/services/sync_manager/realtime_sync_manager.dart';
+import 'package:canaspad/core/services/sync_service.dart';
 import 'package:canaspad/features/environment/services/environment_service.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mockito/mockito.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core_old/services/auth_service.dart';
@@ -33,7 +52,6 @@ final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   }
 });
 
-// モックの SupabaseService プロバイダーを追加
 final mockSupabaseServiceProvider = Provider<SupabaseService>((ref) {
   return MockSupabaseService();
 });
@@ -85,4 +103,88 @@ final environmentServiceProvider = Provider<EnvironmentService>((ref) {
   final secureStorage = ref.watch(secureStorageProvider);
   final flavor = ref.watch(flavorProvider);
   return EnvironmentService(secureStorage, flavor);
+});
+
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final lazyDatabase = LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    return NativeDatabase(file);
+  });
+  return AppDatabase(lazyDatabase);
+});
+
+final databaseManagerProvider = Provider<DatabaseManager>((ref) {
+  return DatabaseManager(ref.read(databaseProvider as ProviderListenable<LazyDatabase>));
+});
+
+final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
+  return ConnectivityService();
+});
+
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  return NotificationService(FlutterLocalNotificationsPlugin());
+});
+
+final realtimeSyncManagerProvider = Provider<RealtimeSyncManager>((ref) {
+  final databaseManager = ref.watch(databaseManagerProvider);
+  final supabaseClientManager = ref.watch(supabaseClientManagerProvider);
+  return RealtimeSyncManager(databaseManager, supabaseClientManager, ref);
+});
+
+final offlineOperationManagerProvider = Provider<OfflineOperationManager>((ref) {
+  final databaseManager = ref.watch(databaseManagerProvider);
+  return OfflineOperationManager(databaseManager, ref);
+});
+
+final lightweightSyncManagerProvider = Provider<LightweightSyncManager>((ref) {
+  final databaseManager = ref.watch(databaseManagerProvider);
+  final supabaseClientManager = ref.watch(supabaseClientManagerProvider);
+  return LightweightSyncManager(databaseManager, supabaseClientManager, ref);
+});
+
+final fullSyncManagerProvider = Provider<FullSyncManager>((ref) {
+  final databaseManager = ref.watch(databaseManagerProvider);
+  final supabaseClientManager = ref.watch(supabaseClientManagerProvider);
+  return FullSyncManager(databaseManager, supabaseClientManager, ref);
+});
+
+final backgroundSyncManagerProvider = Provider<BackgroundSyncManager>((ref) {
+  return BackgroundSyncManager();
+});
+
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final connectivityService = ref.watch(connectivityServiceProvider);
+  final environmentService = ref.watch(environmentServiceProvider);
+  final offlineOperationManager = ref.watch(offlineOperationManagerProvider);
+  final realtimeSyncManager = ref.watch(realtimeSyncManagerProvider);
+  final lightweightSyncManager = ref.watch(lightweightSyncManagerProvider);
+  final fullSyncManager = ref.watch(fullSyncManagerProvider);
+  final backgroundSyncManager = ref.watch(backgroundSyncManagerProvider);
+
+  return SyncService(
+    connectivityService,
+    environmentService,
+    offlineOperationManager,
+    realtimeSyncManager,
+    lightweightSyncManager,
+    fullSyncManager,
+    backgroundSyncManager,
+    ref,
+  );
+});
+
+final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) {
+  return GlobalKey<NavigatorState>();
+});
+
+final errorHandlerProvider = Provider<ErrorHandler>((ref) {
+  final navigatorKey = ref.watch(navigatorKeyProvider);
+  return ErrorHandler(navigatorKey);
+});
+
+final networkAwareSyncManagerProvider = Provider<NetworkAwareSyncManager>((ref) {
+  final databaseManager = ref.watch(databaseManagerProvider);
+  final supabaseClientManager = ref.watch(supabaseClientManagerProvider);
+  return NetworkAwareSyncManager(databaseManager, supabaseClientManager, ref);
 });

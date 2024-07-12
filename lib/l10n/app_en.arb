@@ -1,0 +1,11 @@
+{
+    "error": "Error",
+    "networkErrorMessage": "A network error occurred.",
+    "databaseErrorMessage": "A database error occurred.",
+    "generalErrorMessage": "An error occurred.",
+    "authenticationErrorMessage": "An authentication error occurred.",
+    "synchronizationErrorMessage": "A synchronization error occurred.",
+    "storageErrorMessage": "A storage error occurred.",
+    "externalServiceErrorMessage": "An external service error occurred.",
+    "unknownErrorMessage": "An unknown error occurred."
+}
