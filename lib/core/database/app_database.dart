@@ -128,6 +128,7 @@ class AppDatabase extends _$AppDatabase {
       createdAt: DateTime.parse(sensorData['created_at']),
       updatedAt: DateTime.parse(sensorData['updated_at']),
       createdBy: Value(sensorData['created_by']),
+      environmentId: sensorData['environment_id'],
     );
     await into(sensors).insertOnConflictUpdate(sensor);
   }
@@ -138,6 +139,7 @@ class AppDatabase extends _$AppDatabase {
       sensorPublicId: sensorData['sensor_id'],
       timestamp: DateTime.parse(sensorData['created_at']),
       createdByUserId: Value(sensorData['created_by']),
+      environmentId: sensorData['environment_id'],
     );
     await into(this.sensorData).insert(data);
 
@@ -145,12 +147,14 @@ class AppDatabase extends _$AppDatabase {
       final numericData = NumericDataCompanion.insert(
         publicId: sensorData['id'],
         value: sensorData['value'],
+        environmentId: sensorData['environment_id'],
       );
       await into(this.numericData).insert(numericData);
     } else if (sensorData['file_path'] != null) {
       final imageData = ImageDataCompanion.insert(
         publicId: sensorData['id'],
         filePath: sensorData['file_path'],
+        environmentId: sensorData['environment_id'],
       );
       await into(this.imageData).insert(imageData);
     }
@@ -160,6 +164,7 @@ class AppDatabase extends _$AppDatabase {
     final data = NumericDataCompanion.insert(
       publicId: numericData['id'],
       value: numericData['value'],
+      environmentId: numericData['environment_id'],
     );
 
     await into(this.numericData).insertOnConflictUpdate(data);
@@ -170,6 +175,7 @@ class AppDatabase extends _$AppDatabase {
       sensorPublicId: numericData['sensor_id'],
       timestamp: DateTime.parse(numericData['created_at']),
       createdByUserId: Value(numericData['created_by']),
+      environmentId: numericData['environment_id'],
     );
     await into(this.sensorData).insertOnConflictUpdate(sensorData);
   }
@@ -179,6 +185,7 @@ class AppDatabase extends _$AppDatabase {
       publicId: imageData['id'],
       filePath: imageData['file_path'],
       image: Value(imageData['local_file_path'] != null ? File(imageData['local_file_path']).readAsBytesSync() : null),
+      environmentId: imageData['environment_id'],
     );
 
     await into(this.imageData).insertOnConflictUpdate(data);
@@ -189,6 +196,7 @@ class AppDatabase extends _$AppDatabase {
       sensorPublicId: imageData['sensor_id'],
       timestamp: DateTime.parse(imageData['created_at']),
       createdByUserId: Value(imageData['created_by']),
+      environmentId: imageData['environment_id'],
     );
     await into(this.sensorData).insertOnConflictUpdate(sensorData);
   }

@@ -65,6 +65,7 @@ class RealtimeSyncManager {
         createdAt: DateTime.parse(sensorData['created_at']),
         updatedAt: DateTime.parse(sensorData['updated_at']),
         createdBy: Value(sensorData['created_by']),
+        environmentId: environmentId,
       );
       db.into(db.sensors).insertOnConflictUpdate(sensor);
 
@@ -73,6 +74,7 @@ class RealtimeSyncManager {
           id: Value(sensorData['id']),
           publicId: sensorData['id'],
           unit: sensorData['unit'],
+          environmentId: environmentId,
         );
         db.into(db.numericSensors).insertOnConflictUpdate(numericSensor);
       } else if (sensorData['sensor_type'] == 'image') {
@@ -80,6 +82,7 @@ class RealtimeSyncManager {
           id: Value(sensorData['id']),
           publicId: sensorData['id'],
           resolution: sensorData['resolution'],
+          environmentId: environmentId,
         );
         db.into(db.imageSensors).insertOnConflictUpdate(imageSensor);
       }
@@ -94,6 +97,7 @@ class RealtimeSyncManager {
         sensorPublicId: baseData['sensor_id'],
         timestamp: DateTime.parse(baseData['timestamp']),
         createdByUserId: Value(baseData['created_by']),
+        environmentId: environmentId,
       );
       db.into(db.sensorData).insertOnConflictUpdate(data);
     }
@@ -105,6 +109,7 @@ class RealtimeSyncManager {
         id: Value(numericData['id']),
         publicId: numericData['id'],
         value: numericData['value'],
+        environmentId: environmentId,
       );
       db.into(db.numericData).insertOnConflictUpdate(data);
     }
@@ -116,6 +121,7 @@ class RealtimeSyncManager {
         id: Value(imageData['id']),
         publicId: imageData['id'],
         filePath: imageData['file_path'],
+        environmentId: environmentId,
       );
       db.into(db.imageData).insertOnConflictUpdate(data);
     }
